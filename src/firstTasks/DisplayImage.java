@@ -5,17 +5,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Vector;
 
 @SuppressWarnings("serial")
 public class DisplayImage extends JFrame{
 	private JPanel imageBar;
-	private CenterImageComponent centerImageComponent;
+	private CenterImageComponent m_CenterImageComponent;
 	
 	// preferred size of the small images in the scrollpane
 	private final int smallImageWidth = 160, smallImageHeight=90;
 	
+	// Vector in which every component is saved, to loop through and
+	// look for selected ones to display them in the center
+	private Vector<SmallImage> m_AllSmallImages = new Vector<SmallImage>(5, 0);
+	
 	// how much percent of the center does the big image fill 
 	private int bigImagePercent = 90;
+	
+	// time the thread sleeps after switching an image
+	private int m_SwitchingDelay = 500;
 	
 	
 	
@@ -24,8 +32,8 @@ public class DisplayImage extends JFrame{
 		// CENTER: big image will be display here % of its width/height
 		// SOUTH: Scrollpane with FlowLayout in which all the small-image-components are placed
 		setLayout(new BorderLayout());
-		centerImageComponent = new CenterImageComponent();
-		add(BorderLayout.CENTER, centerImageComponent);		
+		m_CenterImageComponent = new CenterImageComponent();
+		add(BorderLayout.CENTER, m_CenterImageComponent);		
 		
 		imageBar = new JPanel();
 		imageBar.setLayout(new FlowLayout());
@@ -37,20 +45,54 @@ public class DisplayImage extends JFrame{
 		loadImages();
 		
 		add(BorderLayout.SOUTH, scrollbar);
+		
+		//menu to set the time between two images switching
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menu = new JMenu("time");
+		JMenuItem slow = new JMenuItem("slow - 1000ms");
+		JMenuItem medium = new JMenuItem("medium - 500ms");
+		JMenuItem fast = new JMenuItem("fast - 100ms");
+		JMenuItem veryFast = new JMenuItem("very fast - 20ms");
+		slow.addActionListener(e->{
+			m_SwitchingDelay = 1000;
+		});
+		medium.addActionListener(e->{
+			m_SwitchingDelay = 500;
+		});
+		fast.addActionListener(e->{
+			m_SwitchingDelay = 100;
+		});
+		veryFast.addActionListener(e->{
+			m_SwitchingDelay = 20;
+		});
+		menu.add(slow); menu.add(medium); menu.add(fast); menu.add(veryFast);
+		menuBar.add(menu);
+		setJMenuBar(menuBar);
+		
+		
+		 
+		setDefaultCloseOperation(EXIT_ON_CLOSE);;
 		pack();
-		setVisible(true);		
+		setVisible(true);	
+		
+		// starting the background thread 
+		new AnimateSwitching();
 	}
 	
 	private void loadImages(){		
 		try {			
 			 // . means current working directory
 			File directory = new File(".");		
-			  File[] f = directory.listFiles();
+			File[] f = directory.listFiles();
 		        for (File file : f) {
 		        	 // if file ends with .jpg
 		        	if(file != null && file.getName().toLowerCase().endsWith(".jpg")){
 		        		// add it to the bottom imageBar (small images)
-		        		imageBar.add(new SmallImage(ImageIO.read(file)));	
+		        		SmallImage tmp = new SmallImage(ImageIO.read(file));
+		        		imageBar.add(tmp);
+		        		
+		        		// add Component to vector
+		        		m_AllSmallImages.addElement(tmp);
 		        	}
 		        }		     
 		} catch (Exception e) {
@@ -84,6 +126,11 @@ public class DisplayImage extends JFrame{
 	
 	class SmallImage extends JComponent{
 		private Image m_Img;
+		
+		// if selected: adds a red border to the image
+		// runnable-class loops through the vector and checks if selected == true
+		private boolean selected;
+		private int borderWidth = 2;
 		public SmallImage(Image img){
 			m_Img = img;
 			setPreferredSize(new Dimension(smallImageWidth, smallImageHeight));
@@ -93,16 +140,62 @@ public class DisplayImage extends JFrame{
 			addMouseListener(new MouseAdapter(){
 				@Override
 				public void mousePressed(MouseEvent e){
-					centerImageComponent.setImage(img);
+					// left click display the images directly no matter what
+					// right clicks adds the component to the iteration of diplaying them 
+					// one after another
+					if(SwingUtilities.isLeftMouseButton(e))
+						m_CenterImageComponent.setImage(img);
+				
+					else if(SwingUtilities.isRightMouseButton(e)){
+						selected = selected == true ? false : true;
+						repaint();
+					}						
 				}
-			});
+			});			
+		
 		}
 		@Override
 		public void paintComponent(Graphics g){
-			g.drawImage(m_Img, 0, 0, getWidth(), getHeight(), this);
+			super.paintComponent(g);
+			
+			// adds a red border
+			if(selected){
+				g.setColor(Color.RED);
+				g.fillRect(0, 0, getWidth(), getHeight());
+			}	
+			
+			// draws the image; getWidth() - borderWidth*2 { one borderWidth on each side}
+			g.drawImage(m_Img, 0 + borderWidth, 0 + borderWidth, getWidth() - borderWidth*2, getHeight()- borderWidth*2, this);
 		}
 	}
 	
+	
+	
+	class AnimateSwitching implements Runnable{
+		
+		public AnimateSwitching(){
+			Thread t = new Thread(this);
+			t.start();
+		}
+		
+		@Override
+		public void run(){
+			while(true){
+				for(SmallImage smallComp: m_AllSmallImages){
+					if(smallComp.selected){
+						// pass the small image to the center component
+						m_CenterImageComponent.setImage(smallComp.m_Img);
+						try {
+							Thread.sleep(m_SwitchingDelay);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+	}
 	
 	public static void main(String[] args) {
 		new DisplayImage();
