@@ -77,7 +77,7 @@ public class DisplayImage extends JFrame{
 		
 		// starting the background thread 
 		new AnimateSwitching();
-	}
+	} // end constructor
 	
 	private void loadImages(){		
 		try {			
@@ -96,9 +96,10 @@ public class DisplayImage extends JFrame{
 		        	}
 		        }		     
 		} catch (Exception e) {
-			
+			System.out.println("File error");
 		}
-	}
+	} // end loadImages() method
+	
 	class CenterImageComponent extends JComponent{
 		private Image m_Img;
 		public CenterImageComponent(){
@@ -122,7 +123,7 @@ public class DisplayImage extends JFrame{
 			m_Img = img;
 			repaint();
 		}
-	}
+	} // end CenterImageComponent class
 	
 	class SmallImage extends JComponent{
 		private Image m_Img;
@@ -153,7 +154,8 @@ public class DisplayImage extends JFrame{
 				}
 			});			
 		
-		}
+		} // end constructor
+		
 		@Override
 		public void paintComponent(Graphics g){
 			super.paintComponent(g);
@@ -167,7 +169,7 @@ public class DisplayImage extends JFrame{
 			// draws the image; getWidth() - borderWidth*2 { one borderWidth on each side}
 			g.drawImage(m_Img, 0 + borderWidth, 0 + borderWidth, getWidth() - borderWidth*2, getHeight()- borderWidth*2, this);
 		}
-	}
+	} // end SmallImage class
 	
 	
 	
@@ -186,18 +188,20 @@ public class DisplayImage extends JFrame{
 						// pass the small image to the center component
 						m_CenterImageComponent.setImage(smallComp.m_Img);
 						try {
+							// pause the thread
 							Thread.sleep(m_SwitchingDelay);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
-				}
-			}
-		}
-	}
+				} // end for-loop
+			} // end while(true)
+		} // end run()
+	} // end Animation class
 	
 	public static void main(String[] args) {
+		// create new JFrame
 		new DisplayImage();
 	}
 }
