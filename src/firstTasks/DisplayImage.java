@@ -2,9 +2,12 @@ package firstTasks;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 
 @SuppressWarnings("serial")
@@ -42,12 +45,23 @@ public class DisplayImage extends JFrame{
 		scrollbar.setPreferredSize(new Dimension(smallImageWidth	,smallImageHeight + 30));
 		
 		// adding all .jpg's of the current working directory to the FlowLayout
-		loadImages();
+		loadImages(true);
 		
 		add(BorderLayout.SOUTH, scrollbar);
 		
 		//menu to set the time between two images switching
 		JMenuBar menuBar = new JMenuBar();
+		JMenu fileMenu = new JMenu("Files");
+		JMenuItem open = new JMenuItem("open");
+		JMenuItem loadAllImagesItem = new JMenuItem("load all images in current directory");
+		open.addActionListener(e->{
+			loadImages(true);
+		});
+		loadAllImagesItem.addActionListener(e->{
+			loadImages(false);
+		});
+		fileMenu.add(open);
+		fileMenu.add(loadAllImagesItem);
 		JMenu menu = new JMenu("time");
 		JMenuItem slow = new JMenuItem("slow - 1000ms");
 		JMenuItem medium = new JMenuItem("medium - 500ms");
@@ -66,6 +80,7 @@ public class DisplayImage extends JFrame{
 			m_SwitchingDelay = 20;
 		});
 		menu.add(slow); menu.add(medium); menu.add(fast); menu.add(veryFast);
+		menuBar.add(fileMenu);
 		menuBar.add(menu);
 		setJMenuBar(menuBar);
 		
@@ -79,26 +94,66 @@ public class DisplayImage extends JFrame{
 		new AnimateSwitching();
 	} // end constructor
 	
-	private void loadImages(){		
-		try {			
-			 // . means current working directory
-			File directory = new File(".");		
-			File[] f = directory.listFiles();
-		        for (File file : f) {
-		        	 // if file ends with .jpg
-		        	if(file != null && file.getName().toLowerCase().endsWith(".jpg")){
-		        		// add it to the bottom imageBar (small images)
-		        		SmallImage tmp = new SmallImage(ImageIO.read(file));
-		        		imageBar.add(tmp);
-		        		
-		        		// add Component to vector
-		        		m_AllSmallImages.addElement(tmp);
-		        	}
-		        }		     
-		} catch (Exception e) {
-			System.out.println("File error");
+	private void loadImages(boolean useJFileChooser){
+		if(!useJFileChooser){
+			try {			
+				 // . means current working directory
+				File directory = new File(".");		
+				File[] f = directory.listFiles();
+			        for (File file : f) {
+			        	 // if file ends with .jpg
+			        	if(file != null && file.getName().toLowerCase().endsWith(".jpg")){
+			        		// add it to the bottom imageBar (small images)
+			        		SmallImage tmp = new SmallImage(ImageIO.read(file));
+			        		imageBar.add(tmp);
+			        		
+			        		// add Component to vector
+			        		m_AllSmallImages.addElement(tmp);
+			        	}
+			        }		     
+			} catch (Exception e) {
+				System.out.println("File error");
+			}
+		}else{
+			new MyFileChooser(this);
 		}
+		
 	} // end loadImages() method
+	
+	
+	class MyFileChooser extends JFileChooser {
+		public MyFileChooser(JFrame owner) {
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png");
+			setCurrentDirectory(new File  
+					(System.getProperty("user.home") + System.getProperty("file.separator")+ "GitWorkspace" +  System.getProperty("file.separator")+ "ImageAlgo"));
+			setFileFilter(filter);
+			setMultiSelectionEnabled(true);
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+					| UnsupportedLookAndFeelException e1) {
+				e1.printStackTrace();
+			}
+			super.updateUI();
+			showOpenDialog(owner);
+			File[] files = getSelectedFiles();
+			try {
+				for (int i = 0; i < files.length; i++) {
+					// add it to the bottom imageBar (small images)
+	        		SmallImage tmp = new SmallImage(ImageIO.read(files[i]));
+	        		imageBar.add(tmp);
+	        		
+	        		// add Component to vector
+	        		m_AllSmallImages.addElement(tmp);
+									}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	
+	
 	
 	class CenterImageComponent extends JComponent{
 		private Image m_Img;
@@ -174,7 +229,7 @@ public class DisplayImage extends JFrame{
 	
 	
 	class AnimateSwitching implements Runnable{
-		
+		private volatile boolean pause;
 		public AnimateSwitching(){
 			Thread t = new Thread(this);
 			t.start();
@@ -184,21 +239,33 @@ public class DisplayImage extends JFrame{
 		public void run(){
 			while(true){
 				for(SmallImage smallComp: m_AllSmallImages){
-					if(smallComp.selected){
-						// pass the small image to the center component
-						m_CenterImageComponent.setImage(smallComp.m_Img);
-						try {
-							// pause the thread
-							Thread.sleep(m_SwitchingDelay);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+					if(!pause){
+						if(smallComp.selected){
+							// pass the small image to the center component
+							m_CenterImageComponent.setImage(smallComp.m_Img);
+							try {
+								// pause the thread
+								Thread.sleep(m_SwitchingDelay);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
-					}
+					}				
 				} // end for-loop
 			} // end while(true)
 		} // end run()
+		
+		public void pauseBecauseOfVectorResizing(){
+			pause = true;
+		}
+		public void continueThreadAfterVectorResizing(){
+			pause = false;
+		}
 	} // end Animation class
+	
+	
+	
 	
 	public static void main(String[] args) {
 		// create new JFrame
