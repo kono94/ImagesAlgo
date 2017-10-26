@@ -1,25 +1,19 @@
 Assignment 1
-WICHTIG:
-Bestandteil der Aufgabe ist es, Unklarheiten im Vorfeld zu klÃ¤ren. Nutzen Sie die
-Ãœbungen, um eventuelle Mehrdeutigkeiten anzusprechen und MissverstÃ¤ndnisse zu
-vermeiden. Sollten die Aufgaben nicht adÃ¤quat gelÃ¶st werden, weil die Aufgabe
-missverstanden wurde, so wird dies negativ bewertet.
-Hochschule Bremerhaven Algorithmen & Datenstrukturen Prof. Dr. Peter Kelb
-Informatik / Wirtschaftsinformatik
+
 Schreiben Sie ein Java Programm, das mehrere Bilder (JPG und GIF) einlesen
-kann. Folgende Funktionen soll das Programm zur VerfÃ¼gung stellen:
-ï‚· automatisches Ãœberblenden zwischen Bildern einer beliebig zu
+kann. Folgende Funktionen soll das Programm zur Verfügung stellen:
+- automatisches Überblenden zwischen Bildern einer beliebig zu
 erstellenden Gruppe von Bildern
-ï‚· Histogrammerstellung der verwendeten Farben eines frei auszuwÃ¤hlenden
+? Histogrammerstellung der verwendeten Farben eines frei auszuwählenden
 Bildes (welche Farben kommen wie oft vor)
-ï‚· freie Bildmorphologie, indem mittels Mouseauswahl in einem Bereich
-eines Bildes eine frei wÃ¤hlbare Morphologie durchgefÃ¼hrt wird (beliebig
-viele Aktionen sollen durchfÃ¼hrbar sein); hierbei soll auch ein Teil eines
-beliebig anderen Bildes verwendet werden kÃ¶nnen
-ï‚· in den Bildern sollen beliebig viele Linien und Kreise (ausgefÃ¼llt und
-nicht ausgefÃ¼llt) gezeichnet werden kÃ¶nnen; diese sollen mit beliebig zu
-definierenden FarbverlÃ¤ufen durchgefÃ¼hrt werden; hierfÃ¼r ist jeweils der
+- freie Bildmorphologie, indem mittels Mouseauswahl in einem Bereich
+eines Bildes eine frei wählbare Morphologie durchgeführt wird (beliebig
+viele Aktionen sollen durchführbar sein); hierbei soll auch ein Teil eines
+beliebig anderen Bildes verwendet werden können
+- in den Bildern sollen beliebig viele Linien und Kreise (ausgefüllt und
+nicht ausgefüllt) gezeichnet werden können; diese sollen mit beliebig zu
+definierenden Farbverläufen durchgeführt werden; hierfür ist jeweils der
 Bresenham Algorithmus zu verwenden.
-Bestandteil der Aufgabe ist es auch, sich neben einem sauberen Konzept fÃ¼r die
+Bestandteil der Aufgabe ist es auch, sich neben einem sauberen Konzept für die
 Programmarchitektur eine intuitive und einfach zu benutzende
-Benutzerschnittstelle zu Ã¼berlegen und zu implementieren.
+Benutzerschnittstelle zu überlegen und zu implementieren.
