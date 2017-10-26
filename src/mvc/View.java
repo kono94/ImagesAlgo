@@ -6,19 +6,17 @@ import java.util.Vector;
 
 @SuppressWarnings("serial")
 public class View extends JFrame{
-	private CenterImageComponent m_CenterImageComponent;
-	
-	// preferred size of the small images in the scrollpane
-	private final int smallImageWidth = 160, smallImageHeight = 90;
+	private CenterImageComponent m_CenterImageComponent;	
 
 	// how much percent of the center does the big image fill
 	private int bigImagePercent = 90;
+	
 	// Vector in which every component is saved, to loop through and
 	// look for selected ones to display them in the center
 	private Vector<SmallImage> m_AllSmallImages = new Vector<SmallImage>(5, 0);
 
 	private MyMenuBar m_MenuBar;
-	ImageBarPanel m_ImageBar;
+	private ImageBarPanel m_ImageBar;
 	
 	public View() {
 		m_ImageBar = new ImageBarPanel(this);	
@@ -39,17 +37,8 @@ public class View extends JFrame{
 		setVisible(true);
 		
 		new MyFileChooser(m_AllSmallImages, m_CenterImageComponent, m_ImageBar, this);
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	}	
+		
 
 	class CenterImageComponent extends JComponent {
 		private Image m_Img;
