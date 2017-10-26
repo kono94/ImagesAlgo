@@ -1,2 +1,25 @@
-Aufgaben zur Vorbereitung auf Algorithmen und Datenstrukturen
-! LUL
+Assignment 1
+WICHTIG:
+Bestandteil der Aufgabe ist es, Unklarheiten im Vorfeld zu klären. Nutzen Sie die
+Übungen, um eventuelle Mehrdeutigkeiten anzusprechen und Missverständnisse zu
+vermeiden. Sollten die Aufgaben nicht adäquat gelöst werden, weil die Aufgabe
+missverstanden wurde, so wird dies negativ bewertet.
+Hochschule Bremerhaven Algorithmen & Datenstrukturen Prof. Dr. Peter Kelb
+Informatik / Wirtschaftsinformatik
+Schreiben Sie ein Java Programm, das mehrere Bilder (JPG und GIF) einlesen
+kann. Folgende Funktionen soll das Programm zur Verfügung stellen:
+ automatisches Überblenden zwischen Bildern einer beliebig zu
+erstellenden Gruppe von Bildern
+ Histogrammerstellung der verwendeten Farben eines frei auszuwählenden
+Bildes (welche Farben kommen wie oft vor)
+ freie Bildmorphologie, indem mittels Mouseauswahl in einem Bereich
+eines Bildes eine frei wählbare Morphologie durchgeführt wird (beliebig
+viele Aktionen sollen durchführbar sein); hierbei soll auch ein Teil eines
+beliebig anderen Bildes verwendet werden können
+ in den Bildern sollen beliebig viele Linien und Kreise (ausgefüllt und
+nicht ausgefüllt) gezeichnet werden können; diese sollen mit beliebig zu
+definierenden Farbverläufen durchgeführt werden; hierfür ist jeweils der
+Bresenham Algorithmus zu verwenden.
+Bestandteil der Aufgabe ist es auch, sich neben einem sauberen Konzept für die
+Programmarchitektur eine intuitive und einfach zu benutzende
+Benutzerschnittstelle zu überlegen und zu implementieren.
