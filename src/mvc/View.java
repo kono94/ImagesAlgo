@@ -19,25 +19,26 @@ public class View extends JFrame{
 
 	private MyMenuBar m_MenuBar;
 	ImageBarPanel m_ImageBar;
+	
 	public View() {
-		// set the Layout to BorderLayout.
-		// CENTER: big image will be display here % of its width/height
-		// SOUTH: Scrollpane with FlowLayout in which all the
-		// small-image-components are placed
-		setLayout(new BorderLayout());
-
-		m_ImageBar = new ImageBarPanel(this);
-		
+		m_ImageBar = new ImageBarPanel(this);	
+		m_CenterImageComponent = new CenterImageComponent();		
 		m_MenuBar = new MyMenuBar(this);
 		setJMenuBar(m_MenuBar);
 		
-		m_CenterImageComponent = new CenterImageComponent();
-		new MyFileChooser(m_AllSmallImages, m_CenterImageComponent, m_ImageBar, this);
 		
-		
+		// set the Layout to BorderLayout.
+		// CENTER: big image will be display here % of its width/height
+		// SOUTH: Scrollpane with FlowLayout in which all the
+		// small-image-components are placed		
+		setLayout(new BorderLayout());
+		add(BorderLayout.CENTER, m_CenterImageComponent);
+		add(BorderLayout.SOUTH, m_ImageBar.getScrollPane());
 		pack();
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
+		
+		new MyFileChooser(m_AllSmallImages, m_CenterImageComponent, m_ImageBar, this);
 	}
 	
 	

@@ -8,12 +8,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 @SuppressWarnings("serial")
 public class ImageBarPanel extends JPanel{
-	
+	private JScrollPane m_Scrollpane;
 	public ImageBarPanel(JFrame owner){
 		setLayout(new FlowLayout());
-		JScrollPane scrollbar = new JScrollPane(this);
+		m_Scrollpane = new JScrollPane(this);
 		
 		// smallImageHeight + 30 to take the scrollbar into account
-		scrollbar.setPreferredSize(new Dimension(SmallImage.WIDTH, SmallImage.HEIGHT + 30));
+		m_Scrollpane.setPreferredSize(new Dimension(SmallImage.WIDTH, SmallImage.HEIGHT + 30));
+	}
+	public JScrollPane getScrollPane(){
+		return m_Scrollpane;
 	}
 }

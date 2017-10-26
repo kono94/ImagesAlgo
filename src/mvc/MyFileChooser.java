@@ -14,12 +14,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import mvc.View.CenterImageComponent;
 
 
+@SuppressWarnings("serial")
 class MyFileChooser extends JFileChooser {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 	public MyFileChooser(Vector<SmallImage> smallImageVector, CenterImageComponent centerImageComponent, ImageBarPanel imageBar, JFrame owner) {
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png");
 		setCurrentDirectory(new File(System.getProperty("user.home") + System.getProperty("file.separator")
