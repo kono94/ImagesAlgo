@@ -14,7 +14,7 @@ import javax.swing.SwingUtilities;
 import mvc.View.CenterImageComponent;
 
 @SuppressWarnings("serial")
-public class SmallImage extends JComponent {
+public class MyImage extends JComponent {
 	private Image m_Img;
 	// preferred size of the small images in the scrollpane
 	public static final int WIDTH = 160;
@@ -26,7 +26,7 @@ public class SmallImage extends JComponent {
 	private boolean selected;
 	private int borderWidth = 2;
 
-	public SmallImage(Image img, CenterImageComponent centerImageComponent, JFrame owner) {
+	public MyImage(Image img, CenterImageComponent centerImageComponent, JFrame owner) {
 		m_Img = img;
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 

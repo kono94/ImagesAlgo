@@ -13,7 +13,7 @@ public class View extends JFrame{
 	
 	// Vector in which every component is saved, to loop through and
 	// look for selected ones to display them in the center
-	private Vector<SmallImage> m_AllSmallImages = new Vector<SmallImage>(5, 0);
+	private Vector<MyImage> m_AllMyImages = new Vector<MyImage>(5, 0);
 
 	private MyMenuBar m_MenuBar;
 	private ImageBarPanel m_ImageBar;
@@ -36,7 +36,7 @@ public class View extends JFrame{
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
 		
-		new MyFileChooser(m_AllSmallImages, m_CenterImageComponent, m_ImageBar, this);
+		new MyFileChooser(m_AllMyImages, m_CenterImageComponent, m_ImageBar, this);
 	}	
 		
 

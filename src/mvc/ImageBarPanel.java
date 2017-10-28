@@ -14,7 +14,7 @@ public class ImageBarPanel extends JPanel{
 		m_Scrollpane = new JScrollPane(this);
 		
 		// smallImageHeight + 30 to take the scrollbar into account
-		m_Scrollpane.setPreferredSize(new Dimension(SmallImage.WIDTH, SmallImage.HEIGHT + 30));
+		m_Scrollpane.setPreferredSize(new Dimension(MyImage.WIDTH, MyImage.HEIGHT + 30));
 	}
 	public JScrollPane getScrollPane(){
 		return m_Scrollpane;

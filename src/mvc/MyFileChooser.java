@@ -16,7 +16,7 @@ import mvc.View.CenterImageComponent;
 
 @SuppressWarnings("serial")
 class MyFileChooser extends JFileChooser {
-	public MyFileChooser(Vector<SmallImage> smallImageVector, CenterImageComponent centerImageComponent, ImageBarPanel imageBar, JFrame owner) {
+	public MyFileChooser(Vector<MyImage> myImageVector, CenterImageComponent centerImageComponent, ImageBarPanel imageBar, JFrame owner) {
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png");
 		setCurrentDirectory(new File(System.getProperty("user.home") + System.getProperty("file.separator")
 				+ "GitWorkspace" + System.getProperty("file.separator") + "ImageAlgo"));
@@ -34,11 +34,11 @@ class MyFileChooser extends JFileChooser {
 		try {
 			for (int i = 0; i < files.length; i++) {
 				// add it to the bottom imageBar (small images)
-				SmallImage tmp = new SmallImage(ImageIO.read(files[i]), centerImageComponent, owner);
+				MyImage tmp = new MyImage(ImageIO.read(files[i]), centerImageComponent, owner);
 				imageBar.add(tmp);
 
 				// add Component to vector
-				smallImageVector.addElement(tmp);
+				myImageVector.addElement(tmp);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
