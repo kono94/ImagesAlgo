@@ -31,3 +31,5 @@ Thoughgs:
 	
 7) MyImage 
 	-	should not be a JComponent, right?
+	
+8) Why does loadAllImagesFromDirectory()  freezes the UI-Thread?

@@ -17,8 +17,13 @@ import mvc.View.CenterImageComponent;
 
 
 @SuppressWarnings("serial")
+//Opens a JFileChooser and loads all selected images into 
+//the a private image[], controller will call "getInput()" 
+//to get the array and pass the img-data to the model and view
+//(create "MyImages")
 class MyFileChooser extends JFileChooser {
-	public MyFileChooser(Model model, View view) {
+	private Image[] images;
+	public MyFileChooser(JFrame view) {
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png", "gif");
 		setCurrentDirectory(new File(System.getProperty("user.dir")));
 		setFileFilter(filter);
@@ -31,22 +36,27 @@ class MyFileChooser extends JFileChooser {
 		}
 		super.updateUI();
 		showOpenDialog(view);
-		File[] files = getSelectedFiles();
+		File[] files = getSelectedFiles();			
+		images = new Image[files.length];
 		try {
 			MediaTracker mt = new MediaTracker(this);
 			for (int i = 0; i < files.length; i++) {
 				// add it to the bottom imageBar (small images)
 				Image tmpImg = ImageIO.read(files[i]);
 				mt.addImage(tmpImg, 0);
-				MyImage tmp = new MyImage(tmpImg, view.getCenterImageComponent());
-				
-				view.getImageBarPanel().add(tmp);
-
-				// add Component to vector
-				model.addImage(tmp);
+				mt.waitForAll();
+				images[i] = tmpImg;			
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+	}
+	
+	public Image[] getInput(){		
+		return images;
 	}
 }
