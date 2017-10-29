@@ -1,5 +1,7 @@
 package mvc;
 
+import mvc.Model.Matrix;
+
 @SuppressWarnings("serial")
 public class Controller {
 	private View view;
@@ -13,6 +15,10 @@ public class Controller {
 		new MyFileChooser(m_model, view);
 		applyMenuListeners();
 		
+		double[][] a = {{3,2,1}, {2,4,2},{3,4,4}};
+		Matrix am = new Matrix(a);
+		System.out.println(Matrix.multiply(am, am).toString());		
+	
 	}
 	
 	public void applyMenuListeners() {

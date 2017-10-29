@@ -16,3 +16,18 @@ Thoughgs:
 4) JFileChooser
 	-	pass model and call "model.addImageToVector" OR pass the vector itself (JFileChooser changes model-data :/ )
 	-	same for view
+	
+	
+5) Vector- and Matrix-class
+	-	inner class of model or seperate classes
+	-	currently: inner classes of model 
+		-> Model.Matrix OR static import!
+	-	vector and matrix only suitable for 3x3 or custom size
+	-	Matrix:
+		-	Matrix a = new Matrix()... a.multiply(Matrix b) OR Matrix.multiply(Matrix A, Matrix B)
+
+6) Shearing
+	-	inverse matrix to shearing?
+	
+7) MyImage 
+	-	should not be a JComponent, right?

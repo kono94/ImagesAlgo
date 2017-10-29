@@ -1,5 +1,7 @@
 package mvc;
 
+import java.awt.Image;
+import java.awt.MediaTracker;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -31,9 +33,13 @@ class MyFileChooser extends JFileChooser {
 		showOpenDialog(view);
 		File[] files = getSelectedFiles();
 		try {
+			MediaTracker mt = new MediaTracker(this);
 			for (int i = 0; i < files.length; i++) {
 				// add it to the bottom imageBar (small images)
-				MyImage tmp = new MyImage(ImageIO.read(files[i]), view.getCenterImageComponent());
+				Image tmpImg = ImageIO.read(files[i]);
+				mt.addImage(tmpImg, 0);
+				MyImage tmp = new MyImage(tmpImg, view.getCenterImageComponent());
+				
 				view.getImageBarPanel().add(tmp);
 
 				// add Component to vector
