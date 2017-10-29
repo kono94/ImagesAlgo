@@ -26,7 +26,7 @@ public class MyImage extends JComponent {
 	private boolean selected;
 	private int borderWidth = 2;
 
-	public MyImage(Image img, CenterImageComponent centerImageComponent, JFrame owner) {
+	public MyImage(Image img, CenterImageComponent centerImageComponent) {
 		m_Img = img;
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 

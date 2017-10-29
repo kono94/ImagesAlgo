@@ -1,0 +1,18 @@
+Thoughgs:
+
+1) Inner classes or seperated classes?
+	- possible inner classes [view]: 
+		- MyMenuBar, ImageBarPanel, (MyFileChooser), 
+		- whats up with "MyImage" ?
+
+2) MVC-Pattern
+	-	apply all Listeners in controller
+	-	view knows controller
+	
+	
+3) Observer-Pattern
+	-	between Model and View
+	
+4) JFileChooser
+	-	pass model and call "model.addImageToVector" OR pass the vector itself (JFileChooser changes model-data :/ )
+	-	same for view

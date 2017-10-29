@@ -16,10 +16,9 @@ import mvc.View.CenterImageComponent;
 
 @SuppressWarnings("serial")
 class MyFileChooser extends JFileChooser {
-	public MyFileChooser(Vector<MyImage> myImageVector, CenterImageComponent centerImageComponent, ImageBarPanel imageBar, JFrame owner) {
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png");
-		setCurrentDirectory(new File(System.getProperty("user.home") + System.getProperty("file.separator")
-				+ "GitWorkspace" + System.getProperty("file.separator") + "ImageAlgo"));
+	public MyFileChooser(Model model, View view) {
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png", "gif");
+		setCurrentDirectory(new File(System.getProperty("user.dir")));
 		setFileFilter(filter);
 		setMultiSelectionEnabled(true);
 		try {
@@ -29,16 +28,16 @@ class MyFileChooser extends JFileChooser {
 			e1.printStackTrace();
 		}
 		super.updateUI();
-		showOpenDialog(owner);
+		showOpenDialog(view);
 		File[] files = getSelectedFiles();
 		try {
 			for (int i = 0; i < files.length; i++) {
 				// add it to the bottom imageBar (small images)
-				MyImage tmp = new MyImage(ImageIO.read(files[i]), centerImageComponent, owner);
-				imageBar.add(tmp);
+				MyImage tmp = new MyImage(ImageIO.read(files[i]), view.getCenterImageComponent());
+				view.getImageBarPanel().add(tmp);
 
 				// add Component to vector
-				myImageVector.addElement(tmp);
+				model.addImage(tmp);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

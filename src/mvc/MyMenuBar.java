@@ -13,7 +13,6 @@ public class MyMenuBar extends JMenuBar{
 	private JMenu m_Mmenu;
 	private JMenuItem m_MIslow;
 	private JMenuItem m_MImedium;
-	private JMenuItem m_MIfast;
 	private JMenuItem m_MIveryFast;
 		public MyMenuBar(JFrame owner){		
 			m_MfileMenu = new JMenu("Files");
@@ -24,12 +23,10 @@ public class MyMenuBar extends JMenuBar{
 			m_Mmenu = new JMenu("time");
 			m_MIslow = new JMenuItem("slow - 1000ms");
 			m_MImedium = new JMenuItem("medium - 500ms");
-			m_MIfast = new JMenuItem("fast - 100ms");
-			m_MIveryFast = new JMenuItem("very fast - 20ms");	
+			m_MIveryFast = new JMenuItem("ultra fast - 30ms");	
 			
 			m_Mmenu.add(m_MIslow);
 			m_Mmenu.add(m_MImedium);
-			m_Mmenu.add(m_MIfast);
 			m_Mmenu.add(m_MIveryFast);
 			this.add(m_MfileMenu);
 			this.add(m_Mmenu);
@@ -51,9 +48,6 @@ public class MyMenuBar extends JMenuBar{
 		}
 		public JMenuItem getMImedium() {
 			return m_MImedium;
-		}
-		public JMenuItem getMIfast() {
-			return m_MIfast;
 		}
 		public JMenuItem getMIveryFast() {
 			return m_MIveryFast;

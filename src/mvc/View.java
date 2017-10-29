@@ -2,27 +2,24 @@ package mvc;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Vector;
 
 @SuppressWarnings("serial")
 public class View extends JFrame{
+	private Model m_Model;
 	private CenterImageComponent m_CenterImageComponent;	
 
 	// how much percent of the center does the big image fill
 	private int bigImagePercent = 90;
 	
-	// Vector in which every component is saved, to loop through and
-	// look for selected ones to display them in the center
-	private Vector<MyImage> m_AllMyImages = new Vector<MyImage>(5, 0);
-
-	private MyMenuBar m_MenuBar;
+	private MyMenuBar m_MyMenuBar;
 	private ImageBarPanel m_ImageBar;
 	
-	public View() {
+	public View(Model model) {
+		m_Model = model;
 		m_ImageBar = new ImageBarPanel(this);	
 		m_CenterImageComponent = new CenterImageComponent();		
-		m_MenuBar = new MyMenuBar(this);
-		setJMenuBar(m_MenuBar);
+		m_MyMenuBar = new MyMenuBar(this);
+		setJMenuBar(m_MyMenuBar);
 		
 		
 		// set the Layout to BorderLayout.
@@ -34,12 +31,10 @@ public class View extends JFrame{
 		add(BorderLayout.SOUTH, m_ImageBar.getScrollPane());
 		pack();
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setVisible(true);
-		
-		new MyFileChooser(m_AllMyImages, m_CenterImageComponent, m_ImageBar, this);
+		setVisible(true);		
 	}	
 		
-
+	
 	class CenterImageComponent extends JComponent {
 		private Image m_Img;
 
@@ -67,6 +62,33 @@ public class View extends JFrame{
 			repaint();
 		}
 	} // end CenterImageComponent class
+	
+	
+	class ImageBarPanel extends JPanel{
+		private JScrollPane m_Scrollpane;
+		public ImageBarPanel(JFrame owner){
+			setLayout(new FlowLayout());
+			m_Scrollpane = new JScrollPane(this);
+			
+			// smallImageHeight + 30 to take the scrollbar into account
+			m_Scrollpane.setPreferredSize(new Dimension(MyImage.WIDTH, MyImage.HEIGHT + 30));
+		}
+		public JScrollPane getScrollPane(){
+			return m_Scrollpane;
+		}
+	}
 
+
+	
+	public MyMenuBar getMyMenuBar() {
+		return m_MyMenuBar;
+	}
+	
+	public CenterImageComponent getCenterImageComponent() {
+		return m_CenterImageComponent;
+	}
+	public ImageBarPanel getImageBarPanel() {
+		return m_ImageBar;
+	}
 
 }
