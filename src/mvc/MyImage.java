@@ -50,7 +50,7 @@ public class MyImage extends JComponent {
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));		
 		m_ImgSrc.newPixels();
 		m_Img = createImage(m_ImgSrc);
-		random();
+		//random();
 		// clicking on the small images "sends" them to the centerImage
 		// class to be
 		// displayed in the center

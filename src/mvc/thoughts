@@ -33,3 +33,5 @@ Thoughgs:
 	-	should not be a JComponent, right?
 	
 8) Why does loadAllImagesFromDirectory()  freezes the UI-Thread?
+
+9) Histogramm Hashtabelle

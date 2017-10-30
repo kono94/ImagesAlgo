@@ -120,23 +120,23 @@ public class Model {
 			//TODO inverse ?! -shX or 1/shX ??
 			// "X-Scherung"
 			public static Matrix xShearing(int shX) {
-				double[][] tmp = {{1, shX, 0}, {0, 1, 0},{0,0,1}};
+				double[][] tmp = {{1, 1/shX, 0}, {0, 1, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
 			public static Matrix inverseXShearing(int shX) {
-				double[][] tmp = {{1, -shX, 0}, {0, 1, 0},{0,0,1}};	
+				double[][] tmp = {{1, 1/shX, 0}, {0, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			
 			// "Y-Scherung"
 			public static Matrix yShearing(int shY) {
-				double[][] tmp = {{1, 0, 0}, {shY, 1, 0},{0,0,1}};
+				double[][] tmp = {{1, 0, 0}, {1/shY, 1, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
 			public static Matrix inverseYShearing(int shY) {
-				double[][] tmp = {{1, 0, 0}, {-shY, 1, 0},{0,0,1}};	
+				double[][] tmp = {{1, 0, 0}, {1/shY, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			

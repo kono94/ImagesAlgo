@@ -39,33 +39,39 @@ public class Controller {
 	}
 
 	public void loadAllImagesFromDirectory() {
-		try {
-			// . means current working directory
-			File directory = new File(".");
-			File[] f = directory.listFiles();
-			for (File file : f) {
-				// if file ends with .jpg or .gif
-				if (file != null && (file.getName().toLowerCase().endsWith(".jpg")
-						|| file.getName().toLowerCase().endsWith(".gif"))) {
-					
-					MediaTracker mt = new MediaTracker(m_View);					
-					Image tmpImg = ImageIO.read(file);
-					mt.addImage(tmpImg, 0);
-					mt.waitForAll();
-					
-					// add it to the bottom imageBar (small images)
-					MyImage tmp = new MyImage(tmpImg, m_View.getCenterImageComponent());
-					// add it to the bottom imageBar (small images)
-					m_View.getImageBarPanel().add(tmp);
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					// . means current working directory
+					File directory = new File(".");
+					File[] f = directory.listFiles();
+					for (File file : f) {
+						// if file ends with .jpg or .gif
+						if (file != null && (file.getName().toLowerCase().endsWith(".jpg")
+								|| file.getName().toLowerCase().endsWith(".gif"))) {
+							
+							MediaTracker mt = new MediaTracker(m_View);					
+							Image tmpImg = ImageIO.read(file);
+							mt.addImage(tmpImg, 0);
+							mt.waitForAll();
+							
+							// add it to the bottom imageBar (small images)
+							MyImage tmp = new MyImage(tmpImg, m_View.getCenterImageComponent());
+							// add it to the bottom imageBar (small images)
+							m_View.getImageBarPanel().add(tmp);
 
-					// add Component to vector
-					m_Model.addImage(tmp);
+							// add Component to vector
+							m_Model.addImage(tmp);
+						}
+					}
+				} catch (Exception e) {
+					System.out.println("File error");
 				}
+				m_View.getImageBarPanel().revalidate();
 			}
-		} catch (Exception e) {
-			System.out.println("File error");
-		}
-		m_View.getImageBarPanel().revalidate();
+		}.start();
+		
 	}
 
 	public void applyMenuListeners() {
