@@ -62,13 +62,13 @@ public class MyImage extends JComponent {
 			public void mousePressed(MouseEvent e) {
 				// left click display the images directly no matter what
 				// right clicks adds the component to the iteration of
-				// diplaying them
-				// one after another
+				// diplaying them one after another
 				if (SwingUtilities.isLeftMouseButton(e))
 					centerImageComponent.setImage(m_Img);
 
 				else if (SwingUtilities.isRightMouseButton(e)) {
 					selected = selected == true ? false : true;
+					random();
 					repaint();
 				}
 			}
@@ -85,12 +85,15 @@ public class MyImage extends JComponent {
 	
 	
 	public void random(){
-		for (int i = 0; i < m_Pix.length; i++) {
-			m_Pix[i] /= 2;
+		System.err.println(Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4"))));
+		for (int i = 0; i < m_Pix.length-1; i++) {			
+			m_Pix[i] >>= Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4")));
 		}
 		m_ImgSrc.newPixels();
 		repaint();
 	}
+	
+	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);

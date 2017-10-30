@@ -24,7 +24,7 @@ import mvc.View.CenterImageComponent;
 class MyFileChooser extends JFileChooser {
 	private Image[] images;
 	public MyFileChooser(JFrame view) {
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png", "gif");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg","gif");
 		setCurrentDirectory(new File(System.getProperty("user.dir")));
 		setFileFilter(filter);
 		setMultiSelectionEnabled(true);
