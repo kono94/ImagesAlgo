@@ -23,9 +23,12 @@ public class MyImage extends JComponent {
 	public static final int WIDTH = 160;
 	public static final int HEIGHT = 90;
 	
+	public static final int IMG_WIDTH = 1280;
+	public static final int IMG_HEIGHT = 720;
+	
 	private Image m_Img;
-	private int[] m_Pix = new int[WIDTH * HEIGHT];
-	private int[] m_OriginalPixels = new int[WIDTH * HEIGHT];
+	private int[] m_Pix = new int[IMG_WIDTH * IMG_HEIGHT];
+	private int[] m_OriginalPixels = new int[IMG_WIDTH * IMG_HEIGHT];
 	private MemoryImageSource m_ImgSrc;
 	private PixelGrabber m_PixelGrabber;
 	// if selected: adds a red border to the image
@@ -36,10 +39,10 @@ public class MyImage extends JComponent {
 
 	public MyImage(Image img, CenterImageComponent centerImageComponent) {
 	
-		m_Img = img;
-		m_ImgSrc = new MemoryImageSource(WIDTH, HEIGHT, m_Pix, 0, WIDTH);
+		m_Img = img.getScaledInstance(IMG_WIDTH, IMG_HEIGHT, Image.SCALE_SMOOTH);
+		m_ImgSrc = new MemoryImageSource(IMG_WIDTH, IMG_HEIGHT, m_Pix, 0, IMG_WIDTH);
 		m_ImgSrc.setAnimated(true);
-		m_PixelGrabber = new PixelGrabber(m_Img, 0, 0, WIDTH, HEIGHT, m_OriginalPixels, 0, WIDTH);
+		m_PixelGrabber = new PixelGrabber(m_Img, 0, 0, IMG_WIDTH, IMG_HEIGHT, m_OriginalPixels, 0, IMG_WIDTH);
 		try {
 			m_PixelGrabber.grabPixels();
 		} catch (InterruptedException e1) {

@@ -3,6 +3,7 @@ package mvc;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.io.File;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
@@ -23,6 +24,8 @@ public class Controller {
 		double[][] a = { { 3, 2, 1 }, { 2, 4, 2 }, { 3, 4, 4 } };
 		Matrix am = new Matrix(a);
 		System.out.println(Matrix.multiply(am, am).toString());
+		int[] pixell = new int[MyImage.WIDTH * MyImage.HEIGHT];
+		System.out.println(pixell.length);
 
 	}
 
