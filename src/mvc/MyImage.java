@@ -14,43 +14,45 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import mvc.Model.Matrix;
 import mvc.View.CenterImageComponent;
 
-//TODO speration of logic and view
+//TODO speration of logic and view?
 @SuppressWarnings("serial")
 public class MyImage extends JComponent {	
 	// preferred size of the small images in the scrollpane
-	public static final int WIDTH = 160;
-	public static final int HEIGHT = 90;
+	public static final int COMP_WIDTH = 160;
+	public static final int COMP_HEIGHT = 90;
 	
 	public static final int IMG_WIDTH = 1280;
 	public static final int IMG_HEIGHT = 720;
 	
 	private Image m_Img;
-	private int[] m_Pix = new int[IMG_WIDTH * IMG_HEIGHT];
-	private int[] m_OriginalPixels = new int[IMG_WIDTH * IMG_HEIGHT];
+	private int[] m_CurrentPix = new int[IMG_WIDTH * IMG_HEIGHT];
+	private int[] m_OriginalPix = new int[IMG_WIDTH * IMG_HEIGHT];
 	private MemoryImageSource m_ImgSrc;
 	private PixelGrabber m_PixelGrabber;
+	private Matrix m_Matrix;
 	// if selected: adds a red border to the image
 	// runnable-class loops through the vector and checks if selected ==
 	// true
 	private boolean selected;
 	private int borderWidth = 2;
 
-	public MyImage(Image img, CenterImageComponent centerImageComponent) {
-	
+	public MyImage(Image img, CenterImageComponent centerImageComponent) { 
+		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
 		m_Img = img.getScaledInstance(IMG_WIDTH, IMG_HEIGHT, Image.SCALE_SMOOTH);
-		m_ImgSrc = new MemoryImageSource(IMG_WIDTH, IMG_HEIGHT, m_Pix, 0, IMG_WIDTH);
+		m_ImgSrc = new MemoryImageSource(IMG_WIDTH, IMG_HEIGHT, m_CurrentPix, 0, IMG_WIDTH);
 		m_ImgSrc.setAnimated(true);
-		m_PixelGrabber = new PixelGrabber(m_Img, 0, 0, IMG_WIDTH, IMG_HEIGHT, m_OriginalPixels, 0, IMG_WIDTH);
+		m_PixelGrabber = new PixelGrabber(m_Img, 0, 0, IMG_WIDTH, IMG_HEIGHT, m_OriginalPix, 0, IMG_WIDTH);
 		try {
 			m_PixelGrabber.grabPixels();
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		hardCopyArray(m_Pix, m_OriginalPixels);
-		setPreferredSize(new Dimension(WIDTH, HEIGHT));		
+		hardCopyArray(m_CurrentPix, m_OriginalPix);
+		setPreferredSize(new Dimension(COMP_WIDTH, COMP_HEIGHT));		
 		m_ImgSrc.newPixels();
 		m_Img = createImage(m_ImgSrc);
 		//random();
@@ -63,13 +65,15 @@ public class MyImage extends JComponent {
 				// left click display the images directly no matter what
 				// right clicks adds the component to the iteration of
 				// diplaying them one after another
-				if (SwingUtilities.isLeftMouseButton(e))
-					centerImageComponent.setImage(m_Img);
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					updateImgSrcPixelArrayTo(m_OriginalPix);
+					centerImageComponent.setMyImage(MyImage.this);
+				}
 
 				else if (SwingUtilities.isRightMouseButton(e)) {
 					selected = selected == true ? false : true;
-					random();
-					repaint();
+					 random();
+					 repaint();
 				}
 			}
 		});
@@ -86,13 +90,17 @@ public class MyImage extends JComponent {
 	
 	public void random(){
 		System.err.println(Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4"))));
-		for (int i = 0; i < m_Pix.length-1; i++) {			
-			m_Pix[i] >>= Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4")));
+		for (int i = 0; i < m_CurrentPix.length-1; i++) {			
+			m_CurrentPix[i] >>= Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4")));
 		}
-		m_ImgSrc.newPixels();
+		updateImgSrcPixelArrayTo(m_CurrentPix);
 		repaint();
 	}
 	
+	public void updateImgSrcPixelArrayTo(int[] a) {
+			m_ImgSrc.newPixels(a, getColorModel(), 0, IMG_WIDTH);		
+			repaint();
+	}
 	
 	@Override
 	public void paintComponent(Graphics g) {
@@ -108,5 +116,25 @@ public class MyImage extends JComponent {
 		// each side}
 		g.drawImage(m_Img, 0 + borderWidth, 0 + borderWidth, getWidth() - borderWidth * 2,
 				getHeight() - borderWidth * 2, this);
+	}
+	
+	public Image getImage() {
+		return m_Img;
+	}
+	public int[] getCurrentPix() {
+		return m_CurrentPix;
+	}
+	public int[] getOriginalPix() {
+		return m_OriginalPix;
+	}
+	public Matrix getMatrix() {
+		return m_Matrix;
+	}
+	public void setMatrix(Matrix m) {
+		for(int i = 0; i< m.rowCount(); ++i) {
+			for(int j = 0; j< m.coloumnCount(); ++j) {
+				m_Matrix.getData()[i][j] = m.getData()[i][j];
+			}
+		}
 	}
 } // end SmallImage class

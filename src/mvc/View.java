@@ -2,6 +2,8 @@ package mvc;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 @SuppressWarnings("serial")
 public class View extends JFrame{
@@ -36,15 +38,29 @@ public class View extends JFrame{
 		
 	
 	class CenterImageComponent extends JComponent {
-		private Image m_Img;
+		private MyImage m_MyImage;
+		
 
 		public CenterImageComponent() {
-			setPreferredSize(new Dimension(500, 500));
+			setPreferredSize(new Dimension(1280, 720));
+			addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					// left click display the images directly no matter what
+					// right clicks adds the component to the iteration of
+					// diplaying them one after another
+					if (SwingUtilities.isLeftMouseButton(e)) {
+						m_Model.translate(m_MyImage, 200, 200);
+					
+					}
+				}
+			});
 		}
+	
 
 		@Override
 		public void paintComponent(Graphics g) {
-			if (m_Img != null) {
+			if (m_MyImage != null && m_MyImage.getImage() != null) {
 				// scales the image to fill "bigImagePercent" percent of the
 				// CENTER
 				int x = getWidth() / 2 - getWidth() / 2 * bigImagePercent / 100;
@@ -53,12 +69,12 @@ public class View extends JFrame{
 				int h = getHeight() * bigImagePercent / 100;
 
 				// draw the image
-				g.drawImage(m_Img, x, y, w, h, this);
+				g.drawImage(m_MyImage.getImage(), x, y, w, h, this);
 			}
 		}
-
-		public void setImage(Image img) {
-			m_Img = img;
+		
+		public void setMyImage(MyImage myImage) {
+			m_MyImage = myImage;
 			repaint();
 		}
 	} // end CenterImageComponent class
@@ -71,7 +87,7 @@ public class View extends JFrame{
 			m_Scrollpane = new JScrollPane(this);
 			
 			// smallImageHeight + 30 to take the scrollbar into account
-			m_Scrollpane.setPreferredSize(new Dimension(MyImage.WIDTH, MyImage.HEIGHT + 30));
+			m_Scrollpane.setPreferredSize(new Dimension(MyImage.COMP_WIDTH, MyImage.COMP_HEIGHT + 30));
 		}
 		public JScrollPane getScrollPane(){
 			return m_Scrollpane;

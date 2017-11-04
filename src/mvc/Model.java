@@ -19,9 +19,46 @@ public class Model {
 		public void addImage(MyImage img) {
 			m_VecAllMyImages.addElement(img);
 		}
-
 		
-		class ThreeDimVector{
+		public void translate(MyImage myImg, int h, int v) {
+			Matrix transM = Matrix.inverseTranslation(h, v);
+			//Matrix transM = Matrix.inverseXShearing(50);
+			System.out.println("inverse Matrix\n" +transM.toString());
+			morph(transM, myImg);
+		}
+		
+		public void morph(Matrix m, MyImage myImg) {	
+			System.out.println(m.toString());
+			//System.out.println(myImg.getMatrix().toString());
+			
+			m = Matrix.multiply(m, myImg.getMatrix());
+			myImg.setMatrix(m);
+			
+			System.out.println(m.toString());
+			
+			
+			
+			for(int x = 0; x < MyImage.IMG_WIDTH; ++x) {
+				for(int y= 0; y < MyImage.IMG_HEIGHT; ++y) {
+					ThreeDimVector vXY = new ThreeDimVector(x,y);
+					ThreeDimVector vSrc = Matrix.multiplyWithVector(m, vXY);
+					//System.out.println(vSrc.toString());
+					int posInOriginal = vSrc.getY() * MyImage.IMG_WIDTH + vSrc.getX();
+					//System.out.println("X: " + vSrc.getX() + "\t Y: " + vSrc.getY());
+					if(0 <= vSrc.getY() && vSrc.getY() < MyImage.IMG_HEIGHT && 0 <= vSrc.getX() && vSrc.getX() < MyImage.IMG_WIDTH) {
+						myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = myImg.getOriginalPix()[posInOriginal];
+			
+					}else {
+						
+						myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_VecAllMyImages.get(0).getCurrentPix()[y * MyImage.IMG_WIDTH + x];
+					}
+				}
+			}
+			myImg.updateImgSrcPixelArrayTo(myImg.getCurrentPix());
+			
+		}
+		
+		static class ThreeDimVector{
 			private int[] m_Data;
 			
 			
@@ -33,7 +70,10 @@ public class Model {
 			}
 			
 			public ThreeDimVector(){
-				this(0,0);
+				m_Data = new int[3];
+				m_Data[0] = 0;
+				m_Data[1] = 0;
+				m_Data[2] = 0;
 			}
 			
 			// will this ever be used?
@@ -114,7 +154,7 @@ public class Model {
 			}
 			
 			public static Matrix inverserScaling(int sX, int sY) {
-				double[][] tmp = {{1/sX, 0, 0}, {0, 1/sY, 0},{0,0,1}};
+				double[][] tmp = {{(double)(1/sX), 0, 0}, {0, 1/sY, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			//TODO inverse ?! -shX or 1/shX ??
@@ -125,7 +165,7 @@ public class Model {
 			}
 			
 			public static Matrix inverseXShearing(int shX) {
-				double[][] tmp = {{1, 1/shX, 0}, {0, 1, 0},{0,0,1}};	
+				double[][] tmp = {{1, (double)(1/shX), 0}, {0, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			
@@ -170,6 +210,30 @@ public class Model {
 		        return C;
 		    }	    
 		    
+		    public static ThreeDimVector multiplyWithVector(Matrix ma, ThreeDimVector vec) {
+		    	ThreeDimVector tmp = new ThreeDimVector();
+		    	//System.out.println(tmp.toString() + " =  " + ma.toString() + " * " + vec.toString());
+		    	for(int i=0; i < ma.m_Data.length; ++i) {
+		    		for(int j= 0; j < vec.m_Data.length; ++j) {
+		    			tmp.m_Data[i] = (int)(tmp.m_Data[i] + ma.m_Data[i][j] * vec.m_Data[j]);		    			
+		    		}
+		    	}
+		    //	System.out.println(tmp.toString());
+		    	return tmp;
+		    }
+		    public double[][] getData(){
+		    	return m_Data;
+		    }
+		    public int rowCount(){
+		    	return m_Data.length;
+		    }
+		    public int coloumnCount() {
+		    	return m_Data[0].length;
+		    }
+		    public static double[][] neutralDoubleArr() {
+		    	double[][] neutralDouble = {{1,0,0}, {0,1,0},{0,0,1}};
+		    	return neutralDouble;
+		    }
 				    // print matrix to standard output
 		    public String toString() {
 		    	StringBuilder s = new StringBuilder();
