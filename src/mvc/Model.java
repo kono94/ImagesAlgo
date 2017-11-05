@@ -6,7 +6,7 @@ public class Model {
 		// Vector in which every component is saved, to loop through and
 		// look for selected ones to display them in the center
 		private Vector<MyImage> m_VecAllMyImages;
-		
+		private boolean sw = false;
 		public Model() {
 			m_VecAllMyImages = new Vector<MyImage>(5, 0);			
 		}
@@ -22,13 +22,44 @@ public class Model {
 		
 		public void translate(MyImage myImg, int h, int v) {
 			Matrix transM = Matrix.inverseTranslation(h, v);
-			//Matrix transM = Matrix.inverseXShearing(50);
-			System.out.println("inverse Matrix\n" +transM.toString());
+//			Matrix verschieben = Matrix.inverseTranslation(-MyImage.IMG_WIDTH/2, -MyImage.IMG_HEIGHT/2);
+//			Matrix transM = Matrix.inverseRotation(0.3);
+//			Matrix zurück = Matrix.inverseTranslation(MyImage.IMG_WIDTH/2, MyImage.IMG_HEIGHT/2);
+//			Matrix gesamt = Matrix.multiply((Matrix.multiply(verschieben, transM)), zurück);
+			//System.out.println("inverse Matrix\n" +transM.toString());
 			morph(transM, myImg);
 		}
+		public void rotate(MyImage myImg, double alpha, boolean spinAroundMiddle) {
+			Matrix rotateM;
+			if(!spinAroundMiddle) {
+				rotateM = Matrix.inverseRotation(alpha);
+			}else {
+				Matrix toTopLeftM = Matrix.inverseTranslation(-MyImage.IMG_WIDTH/2, -MyImage.IMG_HEIGHT/2);
+				Matrix spinM = Matrix.inverseRotation(alpha);
+				Matrix backM = Matrix.inverseTranslation(MyImage.IMG_WIDTH/2, MyImage.IMG_HEIGHT/2);
+				rotateM = Matrix.multiply((Matrix.multiply(toTopLeftM, spinM)), backM);
+			}
+			
+			morph(rotateM, myImg);
+		}
+		public void shearX(MyImage myImg, int shX) {
+			Matrix shearM = Matrix.inverseXShearing(shX);
+			morph(shearM, myImg);
+		}
+		
+		public void shearY(MyImage myImg, int shY) {
+			Matrix shearM = Matrix.inverseYShearing(shY);
+			morph(shearM, myImg);
+		}
+		
+		public void shearXY(MyImage myImg, int shX, int shY) {
+			Matrix shearXY = Matrix.multiply(Matrix.inverseXShearing(shX), Matrix.inverseYShearing(shY));
+			morph(shearXY, myImg);
+		}
+		
 		
 		public void morph(Matrix m, MyImage myImg) {	
-			System.out.println(m.toString());
+			//System.out.println(m.toString());
 			//System.out.println(myImg.getMatrix().toString());
 			
 			m = Matrix.multiply(m, myImg.getMatrix());
@@ -50,7 +81,7 @@ public class Model {
 			
 					}else {
 						
-						myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_VecAllMyImages.get(0).getCurrentPix()[y * MyImage.IMG_WIDTH + x];
+						myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_VecAllMyImages.get(0).getOriginalPix()[y * MyImage.IMG_WIDTH + x];
 					}
 				}
 			}
@@ -144,7 +175,7 @@ public class Model {
 			}
 			
 			public static Matrix inverseRotation(double alpha) {
-				double[][] tmp = {{-Math.cos(alpha), Math.sin(alpha), 0}, {-Math.sin(alpha), -Math.cos(alpha), 0},{0,0,1}};	
+				double[][] tmp = {{Math.cos(-alpha), -Math.sin(-alpha), 0}, {Math.sin(-alpha), Math.cos(-alpha), 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			
@@ -154,29 +185,29 @@ public class Model {
 			}
 			
 			public static Matrix inverserScaling(int sX, int sY) {
-				double[][] tmp = {{(double)(1/sX), 0, 0}, {0, 1/sY, 0},{0,0,1}};
+				double[][] tmp = {{1/(double)sX, 0, 0}, {0, 1/(double)sY, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			//TODO inverse ?! -shX or 1/shX ??
 			// "X-Scherung"
 			public static Matrix xShearing(int shX) {
-				double[][] tmp = {{1, 1/shX, 0}, {0, 1, 0},{0,0,1}};
+				double[][] tmp = {{1, 1/(double)shX, 0}, {0, 1, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
 			public static Matrix inverseXShearing(int shX) {
-				double[][] tmp = {{1, (double)(1/shX), 0}, {0, 1, 0},{0,0,1}};	
+				double[][] tmp = {{1, 1/(double)shX, 0}, {0, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			
 			// "Y-Scherung"
 			public static Matrix yShearing(int shY) {
-				double[][] tmp = {{1, 0, 0}, {1/shY, 1, 0},{0,0,1}};
+				double[][] tmp = {{1, 0, 0}, {1/(double)shY, 1, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
 			public static Matrix inverseYShearing(int shY) {
-				double[][] tmp = {{1, 0, 0}, {1/shY, 1, 0},{0,0,1}};	
+				double[][] tmp = {{1, 0, 0}, {1/(double)shY, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			

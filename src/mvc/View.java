@@ -1,9 +1,8 @@
 package mvc;
 
 import javax.swing.*;
+
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 @SuppressWarnings("serial")
 public class View extends JFrame{
@@ -39,22 +38,14 @@ public class View extends JFrame{
 	
 	class CenterImageComponent extends JComponent {
 		private MyImage m_MyImage;
-		
+		private CenterPopupMenu m_Popup;
 
 		public CenterImageComponent() {
+			m_Popup = new CenterPopupMenu();
+			add(m_Popup);
+			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			setPreferredSize(new Dimension(1280, 720));
-			addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(MouseEvent e) {
-					// left click display the images directly no matter what
-					// right clicks adds the component to the iteration of
-					// diplaying them one after another
-					if (SwingUtilities.isLeftMouseButton(e)) {
-						m_Model.translate(m_MyImage, 200, 200);
-					
-					}
-				}
-			});
+			addMouseListener(m_Popup.new PopupMouseListener());
 		}
 	
 
@@ -73,6 +64,13 @@ public class View extends JFrame{
 			}
 		}
 		
+		public CenterPopupMenu getPopup() {
+			return m_Popup;
+		}
+		
+		public MyImage getMyImage() {
+			return m_MyImage;
+		}
 		public void setMyImage(MyImage myImage) {
 			m_MyImage = myImage;
 			repaint();
