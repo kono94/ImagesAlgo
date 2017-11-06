@@ -15,6 +15,7 @@ public class View extends JFrame{
 	
 	private MyMenuBar m_MyMenuBar;
 	private ImageBarPanel m_ImageBar;
+	private UtilityBar m_UtilityBar;
 	
 	public View(Model model) {
 		m_Model = model;
@@ -31,6 +32,7 @@ public class View extends JFrame{
 		setLayout(new BorderLayout());
 		add(BorderLayout.CENTER, m_CenterImageComponent);
 		add(BorderLayout.SOUTH, m_ImageBar.getScrollPane());
+		add(BorderLayout.WEST, new UtilityBar(this));
 		pack();
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);		

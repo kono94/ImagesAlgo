@@ -14,13 +14,14 @@ import mvc.Model.Matrix;
 public class Controller {
 	private View m_View;
 	private Model m_Model;
-	private int m_SwitchingDelay;
+	private int m_SwitchingDelay = 50;
 	private volatile boolean m_IsFading;
 
 	public Controller() {
 		m_Model = new Model();
 		m_View = new View(m_Model);
-		proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
+		//proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
+		loadAllImagesFromDirectory();
 		applyMenuListeners();
 		applyPopupListeners();
 
@@ -73,7 +74,19 @@ public class Controller {
 		}.start();
 
 	}
-
+	public void stopFading() {
+		m_IsFading = false;
+		m_View.getMyMenuBar().getMIfadingSwitcher().setText("start fading");		
+	}
+	public void startFading() {
+		m_IsFading = true;
+		m_View.getMyMenuBar().getMIfadingSwitcher().setText("STOP fading");
+		if (m_View.getCenterImageComponent().getMyImage() == null)
+			new Fader(-1);
+		else {
+			new Fader(m_Model.getMyImageVector().indexOf(m_View.getCenterImageComponent().getMyImage()));
+		}
+	}
 	public void applyMenuListeners() {
 		// load in a single image
 		m_View.getMyMenuBar().getMIopen().addActionListener(e -> {
@@ -87,32 +100,40 @@ public class Controller {
 
 		// switch to slow transition speed
 		m_View.getMyMenuBar().getMIslow().addActionListener(e -> {
-			m_SwitchingDelay = 1000;
+			m_SwitchingDelay = 100;
 		});
 
 		// switch to medium transition speed
 		m_View.getMyMenuBar().getMImedium().addActionListener(e -> {
-			m_SwitchingDelay = 500;
+			m_SwitchingDelay = 50;
 		});
 
 		// switch to ultra transition speed
 		m_View.getMyMenuBar().getMIveryFast().addActionListener(e -> {
-			m_SwitchingDelay = 20;
+			m_SwitchingDelay = 0;
 		});
 
 		m_View.getMyMenuBar().getMIfadingSwitcher().addActionListener(e -> {
 			if (!m_IsFading) {
-				m_IsFading = true;
-				m_View.getMyMenuBar().getMIfadingSwitcher().setText("STOP fading");
-				if (m_View.getCenterImageComponent().getMyImage() == null)
-					new Fader(-1);
-				else {
-					new Fader(m_Model.getMyImageVector().indexOf(m_View.getCenterImageComponent().getMyImage()));
-				}
+				startFading();
 
 			} else {
-				m_IsFading = false;
-				m_View.getMyMenuBar().getMIfadingSwitcher().setText("start fading");
+				stopFading();
+			}
+		});
+
+		m_View.getMyMenuBar().getMIcreateHisto().addActionListener(e -> {
+			if (m_View.getCenterImageComponent().getMyImage() == null) {
+				new InfoDialog(m_View, "Histogramm", "Kein Bild ausgewählt");
+
+			} else {
+				if (m_Model.createHistogramm(m_View.getCenterImageComponent().getMyImage())) {
+					new InfoDialog(m_View, "Histogramm",
+							"Histogramm wurde erfolgreich in die Datei Histogramm.txt geschrieben");
+				} else {
+					new InfoDialog(m_View, "Histogramm", "Es gab einen Fehler beim Erstellen des Histogramms!");
+
+				}
 			}
 		});
 	}
@@ -223,14 +244,15 @@ public class Controller {
 		public void run() {
 			Vector<MyImage> imgVec = m_Model.getMyImageVector();
 			int vecSize = imgVec.size();
-			
+
 			int loopStart = 0;
 			int posImg1 = -1;
 			int posImg2 = -1;
-			
-			if(m_View.getCenterImageComponent().getMyImage() != null && m_View.getCenterImageComponent().getMyImage().isSelected()) {
+
+			if (m_View.getCenterImageComponent().getMyImage() != null
+					&& m_View.getCenterImageComponent().getMyImage().isSelected()) {
 				loopStart = m_Model.getMyImageVector().indexOf(m_View.getCenterImageComponent().getMyImage());
-			}else {
+			} else {
 				for (int i = 0; i < vecSize; ++i) {
 					if (imgVec.get(i).isSelected()) {
 						m_View.getCenterImageComponent().setMyImage(imgVec.get(i));
@@ -238,11 +260,8 @@ public class Controller {
 					}
 				}
 			}
-			
-			
-			while (m_IsFading) {
-				System.out.println("start");
 
+			while (m_IsFading) {
 				for (int i = 0; i < vecSize; ++i) {
 					if (imgVec.get((loopStart + i) % vecSize).isSelected()) {
 						posImg1 = (loopStart + i) % vecSize;
@@ -250,12 +269,11 @@ public class Controller {
 					}
 				}
 				if (posImg1 == -1) {
-					m_IsFading = false;
-					System.out.println("KEIN BILD SELEKTIERT");
+					stopFading();
+					new InfoDialog(m_View, "Fading Error", "Es ist kein Bild ausgewählt");					
 					break;
 				}
 
-				System.out.println(posImg1);
 				for (int i = 1; i < vecSize; ++i) {
 					if (imgVec.get((posImg1 + i) % vecSize).isSelected()) {
 						posImg2 = loopStart = m_endingMyImagePos = (posImg1 + i) % vecSize;
@@ -263,14 +281,14 @@ public class Controller {
 					}
 				}
 				if (posImg2 == -1) {
-					m_IsFading = false;
-					System.out.println("NUR EIN BILD SELEKTIERT");
+					stopFading();
+					new InfoDialog(m_View, "Fading Error", "Es ist nur ein Bild ausgewählt, es werden mindestens zwei benötigt!");					
 					break;
 				}
 
-				for (int k = 0; k <= 100 && m_IsFading; k = k + 1) {
+				for (int k = 0; k <= 100 && m_IsFading; k = k + 3) {
 					try {
-						Thread.sleep(30);
+						Thread.sleep(m_SwitchingDelay);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -281,7 +299,6 @@ public class Controller {
 			}
 			if (m_endingMyImagePos != -1)
 				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(m_endingMyImagePos));
-			System.out.println("stop");
 		}
 	}
 }
