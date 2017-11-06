@@ -3,6 +3,7 @@ package mvc;
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.image.MemoryImageSource;
 
 @SuppressWarnings("serial")
 public class View extends JFrame{
@@ -39,8 +40,11 @@ public class View extends JFrame{
 	class CenterImageComponent extends JComponent {
 		private MyImage m_MyImage;
 		private CenterPopupMenu m_Popup;
-
+		private MyImage m_TempMyImageForFading;
+		private Image m_Img;
+		
 		public CenterImageComponent() {
+			m_TempMyImageForFading = new MyImage(this);
 			m_Popup = new CenterPopupMenu();
 			add(m_Popup);
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -51,7 +55,7 @@ public class View extends JFrame{
 
 		@Override
 		public void paintComponent(Graphics g) {
-			if (m_MyImage != null && m_MyImage.getImage() != null) {
+			if (m_Img != null) {
 				// scales the image to fill "bigImagePercent" percent of the
 				// CENTER
 				int x = getWidth() / 2 - getWidth() / 2 * bigImagePercent / 100;
@@ -60,7 +64,7 @@ public class View extends JFrame{
 				int h = getHeight() * bigImagePercent / 100;
 
 				// draw the image
-				g.drawImage(m_MyImage.getImage(), x, y, w, h, this);
+				g.drawImage(m_Img, x, y, w, h, this);
 			}
 		}
 		
@@ -73,8 +77,19 @@ public class View extends JFrame{
 		}
 		public void setMyImage(MyImage myImage) {
 			m_MyImage = myImage;
+			m_Img = myImage.getImage();
 			repaint();
 		}
+		public void setImg(Image img) {
+			m_Img = img;
+		}
+		 
+		public void setTempMyImageWithPixelArr(int[] a) {
+			m_TempMyImageForFading.setCurrentPix(a);
+			m_Img = m_TempMyImageForFading.getImage();
+			repaint();
+		}
+		
 	} // end CenterImageComponent class
 	
 	

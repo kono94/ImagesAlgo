@@ -32,11 +32,12 @@ public class MyImage extends JComponent {
 	private int[] m_OriginalPix = new int[IMG_WIDTH * IMG_HEIGHT];
 	private MemoryImageSource m_ImgSrc;
 	private PixelGrabber m_PixelGrabber;
+	// Matrix of all changes combined
 	private Matrix m_Matrix;
 	// if selected: adds a red border to the image
 	// runnable-class loops through the vector and checks if selected ==
 	// true
-	private boolean selected;
+	private boolean m_selected;
 	private int borderWidth = 2;
 
 	public MyImage(Image img, CenterImageComponent centerImageComponent) { 
@@ -71,14 +72,24 @@ public class MyImage extends JComponent {
 				}
 
 				else if (SwingUtilities.isRightMouseButton(e)) {
-					selected = selected == true ? false : true;
-					 random();
+					m_selected = m_selected == true ? false : true;
+					// random();
 					 repaint();
 				}
 			}
 		});
 
 	} // end constructor
+	
+	public MyImage(CenterImageComponent center) {
+		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
+		m_ImgSrc = new MemoryImageSource(IMG_WIDTH, IMG_HEIGHT, m_CurrentPix, 0, IMG_WIDTH);
+		m_ImgSrc.setAnimated(true);
+		hardCopyArray(m_CurrentPix, m_OriginalPix);
+		setPreferredSize(new Dimension(COMP_WIDTH, COMP_HEIGHT));	
+		m_Img = createImage(m_ImgSrc);
+		
+	}
 
 	// values from b[] are written into a[]
 	private void hardCopyArray(int[] a, int[] b){
@@ -107,7 +118,7 @@ public class MyImage extends JComponent {
 		super.paintComponent(g);
 		
 		// adds a red border
-		if (selected) {
+		if (m_selected) {
 			g.setColor(Color.RED);
 			g.fillRect(0, 0, getWidth(), getHeight());
 		}
@@ -121,6 +132,9 @@ public class MyImage extends JComponent {
 	public Image getImage() {
 		return m_Img;
 	}
+	public boolean isSelected() {
+		return m_selected;
+	}
 	public int[] getCurrentPix() {
 		return m_CurrentPix;
 	}
@@ -129,6 +143,11 @@ public class MyImage extends JComponent {
 	}
 	public Matrix getMatrix() {
 		return m_Matrix;
+	}
+	public void setCurrentPix(int[] a) {
+		//System.out.println("set");
+		hardCopyArray(m_CurrentPix, a);
+		m_ImgSrc.newPixels();
 	}
 	public void setMatrix(Matrix m) {
 		for(int i = 0; i< m.rowCount(); ++i) {

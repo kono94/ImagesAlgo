@@ -23,23 +23,26 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.NumberFormatter;
 
+@SuppressWarnings("serial")
 public class PopupDialog extends JDialog {
 	private int m_input1;
 	private int m_input2;
-	private double m_doubleInput;
+	private double m_doubleInput1;
+	private double m_doubleInput2;
 	private boolean m_returnTwoValues;
 	private boolean m_returnAsDouble;
+	private boolean m_quit;
+	private boolean m_spinAroundMiddle;
 	private String m_labelText1;
 	private String m_labelText2;
 	private String m_infoText;
-	private boolean m_quit;
 	private JButton okButton;
-	private boolean m_spinAroundMiddle;
+	
 
-	public PopupDialog(JFrame owner, String title, String labelText1, String labelText2, String infoText) {
+	public PopupDialog(JFrame owner, String title, String labelText1, String labelText2, String infoText, boolean returnAsDouble) {
 		super(owner, title, true);
 		m_returnTwoValues = true;
-		m_returnAsDouble = false;
+		m_returnAsDouble = returnAsDouble;
 		m_labelText1 = labelText1;
 		m_labelText2 = labelText2;
 		m_infoText = infoText;
@@ -59,9 +62,7 @@ public class PopupDialog extends JDialog {
 		m_quit = false;
 		setResizable(false);
 		setLayout(new BorderLayout());
-
-		// If you want the value to be committed on each keystroke instead of focus lost
-		// formatter.setCommitsOnValidEdit(true);
+		
 		JPanel centerPanel = new JPanel();
 		JLabel label1;
 		JLabel label2;
@@ -90,11 +91,15 @@ public class PopupDialog extends JDialog {
 			okButton.addActionListener(e -> {
 				try {
 					m_quit = false;
-					m_input1 = Integer.parseInt(field1.getText());
-					m_input2 = Integer.parseInt(field2.getText());
+					if(!m_returnAsDouble) {
+						m_input1 = Integer.parseInt(field1.getText());
+						m_input2 = Integer.parseInt(field2.getText());
+					}else {
+						m_doubleInput1 = Double.parseDouble(field1.getText());
+						m_doubleInput2 = Double.parseDouble(field2.getText());
+					}					
 					dispose();
 				} catch (Exception ex) {
-					System.out.println("Falscher Input");
 					errorLabel.setText("Falsche Eingabe");
 					pack();
 				}
@@ -117,7 +122,7 @@ public class PopupDialog extends JDialog {
 				try {
 					m_quit = false;
 					if (m_returnAsDouble) {
-						m_doubleInput = Double.parseDouble(field1.getText());
+						m_doubleInput1 = Double.parseDouble(field1.getText());
 						if(spinMiddleBox.isSelected()) {
 							m_spinAroundMiddle = true;
 						}						
@@ -126,11 +131,9 @@ public class PopupDialog extends JDialog {
 					}
 					dispose();
 				} catch (Exception ex) {
-					System.out.println("Falscher Input");
 					errorLabel.setText("Falsche Eingabe");
 					pack();
 				}
-
 			});
 		}
 		add(BorderLayout.CENTER, centerPanel);
@@ -142,7 +145,6 @@ public class PopupDialog extends JDialog {
 		buttonPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
 		buttonPanel.setLayout(new FlowLayout());
 		JButton quitButton = new JButton("ABBRECHEN");
-
 		quitButton.addActionListener(e -> {
 			m_quit = true;
 			dispose();
@@ -152,16 +154,16 @@ public class PopupDialog extends JDialog {
 		buttonPanel.add(errorLabel);
 		add(BorderLayout.SOUTH, buttonPanel);
 		pack();
+		
 		Point p = owner.getLocation();
 		setLocation(p.x + owner.getWidth() / 2 - this.getWidth() / 2,
 				p.y + owner.getHeight() / 2 - this.getHeight() / 2);
+		
 		setVisible(true);
 	}
 
 	class EnterListener implements ActionListener {
-		public EnterListener() {
-
-		}
+		public EnterListener() {}
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
@@ -177,8 +179,12 @@ public class PopupDialog extends JDialog {
 		return m_input2;
 	}
 
-	public double getDoubleValue() {
-		return m_doubleInput;
+	public double getDoubleValue1() {
+		return m_doubleInput1;
+	}
+	
+	public double getDoubleValue2() {
+		return m_doubleInput2;
 	}
 
 	public boolean getSpinAroundMid() {

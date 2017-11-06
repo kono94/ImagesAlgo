@@ -1,6 +1,7 @@
 package mvc;
 
 import java.util.Vector;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Model {
 		// Vector in which every component is saved, to loop through and
@@ -21,12 +22,8 @@ public class Model {
 		}
 		
 		public void translate(MyImage myImg, int h, int v) {
-			Matrix transM = Matrix.inverseTranslation(h, v);
-//			Matrix verschieben = Matrix.inverseTranslation(-MyImage.IMG_WIDTH/2, -MyImage.IMG_HEIGHT/2);
-//			Matrix transM = Matrix.inverseRotation(0.3);
-//			Matrix zurück = Matrix.inverseTranslation(MyImage.IMG_WIDTH/2, MyImage.IMG_HEIGHT/2);
-//			Matrix gesamt = Matrix.multiply((Matrix.multiply(verschieben, transM)), zurück);
-			//System.out.println("inverse Matrix\n" +transM.toString());
+			//Matrix transM = Matrix.inverseTranslation(h, v);
+			Matrix transM = Matrix.inverseXShearing(-3.4);
 			morph(transM, myImg);
 		}
 		public void rotate(MyImage myImg, double alpha, boolean spinAroundMiddle) {
@@ -42,19 +39,24 @@ public class Model {
 			
 			morph(rotateM, myImg);
 		}
-		public void shearX(MyImage myImg, int shX) {
+		public void shearX(MyImage myImg, double shX) {
 			Matrix shearM = Matrix.inverseXShearing(shX);
 			morph(shearM, myImg);
 		}
 		
-		public void shearY(MyImage myImg, int shY) {
+		public void shearY(MyImage myImg, double shY) {
 			Matrix shearM = Matrix.inverseYShearing(shY);
 			morph(shearM, myImg);
 		}
 		
-		public void shearXY(MyImage myImg, int shX, int shY) {
+		public void shearXY(MyImage myImg, double shX, double shY) {
 			Matrix shearXY = Matrix.multiply(Matrix.inverseXShearing(shX), Matrix.inverseYShearing(shY));
 			morph(shearXY, myImg);
+		}
+		
+		public void scale(MyImage myImg, double scaleX, double scaleY) {
+			Matrix scaleM = Matrix.inverserScaling(scaleX, scaleY);
+			morph(scaleM, myImg);
 		}
 		
 		
@@ -89,6 +91,34 @@ public class Model {
 			
 		}
 		
+		public int[] getRandomValuesForTranslation() {
+			int h = generateRandomInt(-200, 200);
+			int v = generateRandomInt(-150, 150);
+			int[] tmp = {h,v};
+			return tmp;
+		}
+		public double getRandomValueForRotation() {
+			return generateRandomDouble(-1, 1);
+		}
+		public int getRandomValueForXShearing() {
+			return generateRandomInt(-100, 200);
+		}
+		public int getRandomValueForYShearing() {
+			return generateRandomInt(-50, 150);
+		}
+		public double getRandomValueForScaling() {
+			// generate Number between 0.5 - 0.9 OR 1.1 - 1.5;
+			return generateBoolean() ? 1 - generateRandomDouble(0.1, 0.5) : 1 + generateRandomDouble(0.1, 0.5);
+		}
+		private int generateRandomInt(int min, int max) {
+			return ThreadLocalRandom.current().nextInt(min, max + 1);
+		}
+		private double generateRandomDouble(double min, double max) {
+			return ThreadLocalRandom.current().nextDouble(min, max);
+		}
+		private boolean generateBoolean() {
+			return Math.random() > 0.5 ? false : true;
+		}
 		static class ThreeDimVector{
 			private int[] m_Data;
 			
@@ -179,35 +209,35 @@ public class Model {
 				return new Matrix(tmp);
 			}
 			
-			public static Matrix scaling(int sX, int sY) {
+			public static Matrix scaling(double sX, double sY) {
 				double[][] tmp = {{sX, 0, 0}, {0, sY, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
-			public static Matrix inverserScaling(int sX, int sY) {
-				double[][] tmp = {{1/(double)sX, 0, 0}, {0, 1/(double)sY, 0},{0,0,1}};
+			public static Matrix inverserScaling(double sX, double sY) {
+				double[][] tmp = {{1/sX, 0, 0}, {0, 1/sY, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			//TODO inverse ?! -shX or 1/shX ??
 			// "X-Scherung"
-			public static Matrix xShearing(int shX) {
-				double[][] tmp = {{1, 1/(double)shX, 0}, {0, 1, 0},{0,0,1}};
+			public static Matrix xShearing(double shX) {
+				double[][] tmp = {{1, 1/shX, 0}, {0, 1, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
-			public static Matrix inverseXShearing(int shX) {
-				double[][] tmp = {{1, 1/(double)shX, 0}, {0, 1, 0},{0,0,1}};	
+			public static Matrix inverseXShearing(double shX) {
+				double[][] tmp = {{1, 1/shX, 0}, {0, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			
 			// "Y-Scherung"
-			public static Matrix yShearing(int shY) {
-				double[][] tmp = {{1, 0, 0}, {1/(double)shY, 1, 0},{0,0,1}};
+			public static Matrix yShearing(double shY) {
+				double[][] tmp = {{1, 0, 0}, {1/shY, 1, 0},{0,0,1}};
 				return new Matrix(tmp);
 			}
 			
-			public static Matrix inverseYShearing(int shY) {
-				double[][] tmp = {{1, 0, 0}, {1/(double)shY, 1, 0},{0,0,1}};	
+			public static Matrix inverseYShearing(double shY) {
+				double[][] tmp = {{1, 0, 0}, {1/shY, 1, 0},{0,0,1}};	
 				return new Matrix(tmp);
 			}
 			
