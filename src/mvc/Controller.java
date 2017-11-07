@@ -9,6 +9,7 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 
 import mvc.Model.Matrix;
+import mvc.UtilityBar.Icon;
 
 @SuppressWarnings("serial")
 public class Controller {
@@ -20,7 +21,7 @@ public class Controller {
 	public Controller() {
 		m_Model = new Model();
 		m_View = new View(m_Model);
-		proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
+		// proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
 		loadAllImagesFromDirectory();
 		applyMenuListeners();
 		applyPopupListeners();
@@ -38,7 +39,7 @@ public class Controller {
 		setStartingImage();
 		m_View.getImageBarPanel().revalidate();
 	}
-
+	
 	public void loadAllImagesFromDirectory() {
 		new Thread() {
 			@Override
@@ -82,7 +83,7 @@ public class Controller {
 	}
 	public void setStartingImage() {
 		if(m_View.getCenterImageComponent().getMyImage() == null) {
-			if(m_Model.getMyImageVector() != null && m_Model.getMyImageVector().get(0) != null)
+			if(m_Model.getMyImageVector() != null && m_Model.getMyImageVector().size() > 0)
 				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(0));
 		}
 	}
@@ -249,7 +250,7 @@ public class Controller {
 				m_fadingPixel[i] = compPix(pixelImg1[i], pixelImg2[i], p);
 			}
 			// m_fadingMIS.newPixels();
-			m_View.getCenterImageComponent().setTempMyImageWithPixelArr(m_fadingPixel);
+			m_View.getCenterImageComponent().setWorkingLayerMyImageWithPixelArr(m_fadingPixel);
 		}
 
 		@Override

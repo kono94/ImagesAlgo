@@ -1,5 +1,6 @@
 package mvc;
 
+import java.awt.Point;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -7,11 +8,16 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.ThreadLocalRandom;
 
+import mvc.View.CenterImageComponent;
+
 public class Model {
 	// Vector in which every component is saved, to loop through and
 	// look for selected ones to display them in the center
 	private Vector<MyImage> m_VecAllMyImages;
 	private boolean sw = false;
+	private Point m_SelectStart = new Point(-1, -1);
+	private Point m_SelectEnd = new Point(-1, -1);
+	private MyImage m_WorkingLayerMyImage;
 
 	public Model() {
 		m_VecAllMyImages = new Vector<MyImage>(5, 0);
@@ -24,7 +30,12 @@ public class Model {
 	public void addImage(MyImage img) {
 		m_VecAllMyImages.addElement(img);
 	}
-
+	public void createWorkingImage(CenterImageComponent center) {
+		m_WorkingLayerMyImage = new MyImage(center);
+	}
+	public MyImage getWorkingMyImage() {
+		return m_WorkingLayerMyImage;
+	}
 	public boolean createHistogramm(MyImage img) {
 		PrintWriter writer;
 		try {
@@ -39,11 +50,11 @@ public class Model {
 					colorMap.put(pix[i], (int) colorMap.get(pix[i]) + 1);
 				}
 			}
-			for (Integer color : colorMap.keySet()){
+			for (Integer color : colorMap.keySet()) {
 				writer.println(Integer.toHexString(color) + ": " + (Integer) colorMap.get(color));
-	        }
-		
-			writer.close();
+			}
+
+			writer.close() ;
 			return true;
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -53,8 +64,8 @@ public class Model {
 	}
 
 	public void translate(MyImage myImg, int h, int v) {
-		// Matrix transM = Matrix.inverseTranslation(h, v);
-		Matrix transM = Matrix.inverseXShearing(-3.4);
+		 Matrix transM = Matrix.inverseTranslation(h, v);
+		//Matrix transM = Matrix.inverseXShearing(-3.4);
 		morph(transM, myImg);
 	}
 
@@ -114,8 +125,9 @@ public class Model {
 
 				} else {
 
-					myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_VecAllMyImages.get(0)
-							.getOriginalPix()[y * MyImage.IMG_WIDTH + x];
+					myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0xffffffff;
+							//m_VecAllMyImages.get(0)
+							//.getOriginalPix()[y * MyImage.IMG_WIDTH + x];
 				}
 			}
 		}
@@ -157,6 +169,105 @@ public class Model {
 
 	private boolean generateBoolean() {
 		return Math.random() > 0.5 ? false : true;
+	}
+
+	public void setSelectStart(Point p) {
+		m_SelectStart.x = p.x;
+		m_SelectStart.y = p.y;
+	}
+
+	public void setSelectEnd(Point p) {
+		m_SelectEnd.x = p.x;
+		m_SelectEnd.y = p.y;
+		System.out.println("male");
+	}
+
+	public Point getStartPoint() {
+		return m_SelectStart;
+	}
+
+	public Point getEndPoint() {
+		return m_SelectEnd;
+	}
+	public void resetSelection() {
+		System.out.println("resetet");
+		m_SelectStart.x =-1;
+		m_SelectEnd.x = -1;
+		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
+		m_WorkingLayerMyImage.newPixels();
+	}
+
+	public void drawSelection(Point startP, Point endP) {
+
+		int x = startP.x < endP.x ? startP.x : endP.x;
+		int y = startP.y < endP.y ? startP.y : endP.y;
+		int w = Math.abs(endP.x - startP.x);
+		int h = Math.abs(endP.y - startP.y);
+		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
+//		drawLineInArr(myImage.getCurrentPix(), x, y, x+w, y);
+//		drawLineInArr(myImage.getCurrentPix(), x, y, x, y+h);
+//		drawLineInArr(myImage.getCurrentPix(), x+w, y, x+w, y+h);
+//		drawLineInArr(myImage.getCurrentPix(), x, y+h, x+w, y+h);
+		int bor = 3;
+		for(int i= x; i< x+w+1; ++i) {
+			for(int j=y; j<y+h+1; ++j) {
+				if(i < x + bor || j < y + bor || i > x+w - bor || j > y+h - bor )
+					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0xff882288;
+				else
+					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0x99222299;
+
+					
+			}
+		}
+		m_WorkingLayerMyImage.newPixels();
+	}
+	
+	public void clearAllPix(int[] pix) {
+		for (int i = 0; i < pix.length; i++) {
+			pix[i] = 0;
+		}
+	}
+	public void drawLineInArr(int[] pix, int x0, int y0, int x1, int y1) {
+		final int dx = Math.abs(x0 - x1);
+		final int dy = Math.abs(y0 - y1);
+		final int sgnDx = x0 < x1 ? 1 : -1;
+		final int sgnDy = y0 < y1 ? 1 : -1;
+		int shortD, longD, incXshort, incXlong, incYshort, incYlong;
+		if (dx > dy) {
+			shortD = dy;
+			longD = dx;
+			incXlong = sgnDx;
+			incXshort = 0;
+			incYlong = 0;
+			incYshort = sgnDy;
+		} else {
+			shortD = dx;
+			longD = dy;
+			incXlong = 0;
+			incXshort = sgnDx;
+			incYlong = sgnDy;
+			incYshort = 0;
+		}
+		int d = longD / 2, x = x0, y = y0;
+		for (int i = 0; i <= longD; ++i) {
+			setPixelInArr(pix, x, y);
+			x += incXlong;
+			y += incYlong;
+			d += shortD;
+			if (d >= longD) {
+				d -= longD;
+				x += incXshort;
+				y += incYshort;
+			}
+		}
+	}
+	
+	public void setPixelInArr(int[] pix, int x, int y) {
+		pix[y*MyImage.IMG_WIDTH + x] = 0xff000000 ;
+	}
+	public void changeMode(int i) {
+		Mode.currentMode  = i;
+		resetSelection();		
 	}
 
 	static class ThreeDimVector {

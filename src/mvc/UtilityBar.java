@@ -25,7 +25,11 @@ public class UtilityBar extends JComponent {
 	private Icon m_linie;
 	private Icon m_kreis;
 	private Icon[] m_allIcons = new Icon[3];
-	public UtilityBar(JFrame owner) {
+	private Model m_Model;
+	private View m_View;
+	public UtilityBar(View view, Model m) {
+		m_Model = m;
+		m_View = view;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		if(loadIcons()) {
 			add(m_pfeil);
@@ -43,7 +47,7 @@ public class UtilityBar extends JComponent {
 				}
 			}
 		}else {
-			new InfoDialog(owner, "Error", true, "Konnte die Icons nicht einladen", false);
+			new InfoDialog((JFrame)view, "Error", true, "Konnte die Icons nicht einladen", false);
 		}
 		
 		
@@ -101,7 +105,8 @@ public class UtilityBar extends JComponent {
 			return m_isActive;
 		}
 		public void activate() {
-			Mode.currentMode = m_representedMode;
+			m_Model.changeMode(m_representedMode);
+			
 			for (int i = 0; i < m_allIcons.length; i++) {
 				if(i == m_representedMode)
 					m_isActive = true;

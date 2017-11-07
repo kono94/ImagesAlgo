@@ -156,4 +156,7 @@ public class MyImage extends JComponent {
 			}
 		}
 	}
+	public void newPixels() {
+		m_ImgSrc.newPixels();
+	}
 } // end SmallImage class
