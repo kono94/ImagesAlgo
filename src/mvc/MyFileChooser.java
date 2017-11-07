@@ -36,7 +36,8 @@ class MyFileChooser extends JFileChooser {
 		}
 		super.updateUI();
 		showOpenDialog(view);
-		File[] files = getSelectedFiles();			
+		File[] files = getSelectedFiles();
+		LoadingDialog loadingDialog = new LoadingDialog(view, "Loading Images", "Lädt neue Bilder ein", files.length);
 		images = new Image[files.length];
 		try {
 			MediaTracker mt = new MediaTracker(this);
@@ -45,7 +46,8 @@ class MyFileChooser extends JFileChooser {
 				Image tmpImg = ImageIO.read(files[i]);
 				mt.addImage(tmpImg, 0);
 				mt.waitForAll();
-				images[i] = tmpImg;			
+				images[i] = tmpImg;
+				loadingDialog.addProgress();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -53,6 +55,7 @@ class MyFileChooser extends JFileChooser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		loadingDialog.dispose();
 		
 	}
 	

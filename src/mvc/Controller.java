@@ -20,7 +20,7 @@ public class Controller {
 	public Controller() {
 		m_Model = new Model();
 		m_View = new View(m_Model);
-		//proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
+		proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
 		loadAllImagesFromDirectory();
 		applyMenuListeners();
 		applyPopupListeners();
@@ -35,7 +35,7 @@ public class Controller {
 			// add Component to vector
 			m_Model.addImage(tmp);
 		}
-
+		setStartingImage();
 		m_View.getImageBarPanel().revalidate();
 	}
 
@@ -47,6 +47,8 @@ public class Controller {
 					// . means current working directory
 					File directory = new File(".");
 					File[] f = directory.listFiles();
+					LoadingDialog loadingDialog = new LoadingDialog(m_View, "Loading Images", "Lädt neue Bilder ein", f.length);
+
 					for (File file : f) {
 						// if file ends with .jpg or .gif
 						if (file != null && (file.getName().toLowerCase().endsWith(".jpg")
@@ -65,14 +67,24 @@ public class Controller {
 							// add Component to vector
 							m_Model.addImage(tmp);
 						}
+						loadingDialog.addProgress();
 					}
+					setStartingImage();
+					loadingDialog.dispose();
 				} catch (Exception e) {
 					System.out.println("File error");
 				}
 				m_View.getImageBarPanel().revalidate();
+				
 			}
 		}.start();
 
+	}
+	public void setStartingImage() {
+		if(m_View.getCenterImageComponent().getMyImage() == null) {
+			if(m_Model.getMyImageVector() != null && m_Model.getMyImageVector().get(0) != null)
+				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(0));
+		}
 	}
 	public void stopFading() {
 		m_IsFading = false;
