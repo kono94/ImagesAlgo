@@ -68,7 +68,9 @@ public class View extends JFrame {
 						}else if(Mode.currentMode == Mode.LINE) {
 							m_Model.drawLine();
 						}else if(Mode.currentMode == Mode.CIRCLE) {
-							m_Model.drawCircle(false);
+							m_Model.drawCircle();
+						}else if(Mode.currentMode == Mode.FILLED_CIRCLE) {
+							m_Model.drawCircle();
 						}
 						repaint();
 					}
@@ -106,8 +108,8 @@ public class View extends JFrame {
 							m_Model.drawSelection();
 						} else if (Mode.currentMode == Mode.LINE) {
 							m_Model.drawLine();
-						}else if(Mode.currentMode == Mode.CIRCLE) {
-							m_Model.drawCircle(false);
+						}else if(Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
+							m_Model.drawCircle();
 						}
 
 					}

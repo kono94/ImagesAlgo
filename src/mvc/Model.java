@@ -363,12 +363,11 @@ public class Model {
 		m_WorkingLayerMyImage.newPixels();
 	}
 
-	public void drawCircle(boolean filled) {
+	public void drawCircle() {
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
 		m_currentCircleRadius = (int) Math.hypot((m_StartPoint.x - m_EndPoint.x), (m_StartPoint.y - m_EndPoint.y));
 		System.err.println(m_currentCircleRadius);
-		drawCircle(m_WorkingLayerMyImage.getCurrentPix(), m_StartPoint.x, m_StartPoint.y, m_currentCircleRadius,
-				filled);
+		drawCircle(m_WorkingLayerMyImage.getCurrentPix(), m_StartPoint.x, m_StartPoint.y, m_currentCircleRadius);
 		m_WorkingLayerMyImage.newPixels();
 	}
 
@@ -424,14 +423,19 @@ public class Model {
 		}
 	}
 
-	public void drawCircle(int[] pix, int x0, int y0, int r, boolean filled) {
+	public void drawCircle(int[] pix, int x0, int y0, int r) {
 		int y = 0;
 		int x = r;
 		int F = -r;
 		int dy = 1;
 		int dyx = -2 * r + 3;
 		while (y <= x) {
-			setPixelInArr(pix, x0, y0, x, y);
+			if (Mode.currentMode == Mode.CIRCLE) {
+				setPixelInArrCircle(pix, x0, y0, x, y);
+			}
+			if(Mode.currentMode == Mode.FILLED_CIRCLE) {
+				setPixelInArrFilledCircle(pix, x0, y0, x, y);
+			}
 			++y;
 			dy += 2;
 			dyx += 2;
@@ -451,17 +455,15 @@ public class Model {
 
 			double percent = (x - m_StartPoint.x + m_currentCircleRadius) / w;
 			int percentInt = (int) (percent * 100);
-			int color1 = 0xffff0000;
-			int color2 = 0xff0000ff;
-			System.out.println(percentInt);
+			int color1 = 0xff000000;
+			int color2 = 0xffffffff;
 			return compPix(color1, color2, percentInt);
 		} else if (Mode.currentMode == Mode.LINE) {
 			double w = Math.abs(m_StartPoint.x - m_EndPoint.x);
 			double percent = Math.abs(x - m_StartPoint.x) / w;
-			int percentInt = (int)(percent *100);
+			int percentInt = (int) (percent * 100);
 			int color1 = 0xffff0000;
 			int color2 = 0xff0000ff;
-			System.out.println(percentInt);
 			return compPix(color1, color2, percentInt);
 		} else {
 			return 0xffffffff;
@@ -475,9 +477,8 @@ public class Model {
 		}
 	}
 
-	public void setPixelInArr(int[] pix, int x1, int y1, int x2, int y2) {
-		int color = 0xff000000;
-		setPixelInArr(pix, (x1 + x2) ,(y1 + y2));
+	public void setPixelInArrCircle(int[] pix, int x1, int y1, int x2, int y2) {
+		setPixelInArr(pix, (x1 + x2), (y1 + y2));
 		setPixelInArr(pix, (x1 - x2), (y1 + y2));
 		setPixelInArr(pix, (x1 + x2), (y1 - y2));
 		setPixelInArr(pix, (x1 - x2), (y1 - y2));
@@ -485,6 +486,13 @@ public class Model {
 		setPixelInArr(pix, (x1 - y2), (y1 + x2));
 		setPixelInArr(pix, (x1 + y2), (y1 - x2));
 		setPixelInArr(pix, (x1 - y2), (y1 - x2));
+	}
+
+	public void setPixelInArrFilledCircle(int[] pix, int x1, int y1, int x2, int y2) {
+		drawLineInArr(pix, (x1 + x2), (y1 + y2), (x1 - x2), (y1 + y2));
+		drawLineInArr(pix, (x1 + x2), (y1 - y2), (x1 - x2), (y1 - y2));
+		drawLineInArr(pix, (x1 + y2), (y1 + x2),  (x1 - y2), (y1 + x2));
+		drawLineInArr(pix, (x1 + y2), (y1 - x2), (x1 - y2), (y1 - x2));
 	}
 
 	public void changeMode(int i) {
