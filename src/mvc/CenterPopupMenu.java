@@ -68,7 +68,7 @@ public class CenterPopupMenu extends JPopupMenu {
 //		}
 
 		public void mouseReleased(MouseEvent e) {
-			if (e.isPopupTrigger()) {
+			if (e.isPopupTrigger() && Mode.currentMode != Mode.FADING) {
 				if(Mode.currentMode == Mode.SELECT) {
 					m_SelectionLabel.setVisible(true);
 				}else {

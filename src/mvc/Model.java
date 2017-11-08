@@ -15,8 +15,9 @@ public class Model {
 	// look for selected ones to display them in the center
 	private Vector<MyImage> m_VecAllMyImages;
 	private boolean sw = false;
-	private Point m_SelectStart = new Point(-1, -1);
-	private Point m_SelectEnd = new Point(-1, -1);
+	public Point m_StartPoint = new Point(-1, -1);
+	public Point m_EndPoint = new Point(-1, -1);
+	private int m_currentCircleRadius;
 	private boolean m_alreadyCutOut = false;
 	private MyImage m_WorkingLayerMyImage;
 	private int m_bT = 0;
@@ -33,15 +34,19 @@ public class Model {
 	public void addImage(MyImage img) {
 		m_VecAllMyImages.addElement(img);
 	}
+
 	public void createWorkingImage(CenterImageComponent center) {
 		m_WorkingLayerMyImage = new MyImage(center);
 	}
+
 	public MyImage getWorkingMyImage() {
 		return m_WorkingLayerMyImage;
 	}
+
 	public void setCenterMyImage(MyImage image) {
 		m_CenterMyImg = image;
 	}
+
 	public boolean createHistogramm(MyImage img) {
 		PrintWriter writer;
 		try {
@@ -60,7 +65,7 @@ public class Model {
 				writer.println(Integer.toHexString(color) + ": " + (Integer) colorMap.get(color));
 			}
 
-			writer.close() ;
+			writer.close();
 			return true;
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -70,15 +75,15 @@ public class Model {
 	}
 
 	public void translate(MyImage myImg, int h, int v) {
-		 Matrix transM = Matrix.inverseTranslation(h, v);
-		//Matrix transM = Matrix.inverseXShearing(-3.4);
+		Matrix transM = Matrix.inverseTranslation(h, v);
+		// Matrix transM = Matrix.inverseXShearing(-3.4);
 		morph(transM, myImg);
 	}
+
 	public void translateSelection(int h, int v) {
 		Matrix transM = Matrix.inverseTranslation(h, v);
 		morphSelection(transM);
 	}
-
 
 	public void rotate(MyImage myImg, double alpha, boolean spinAroundMiddle) {
 		Matrix rotateM;
@@ -93,17 +98,19 @@ public class Model {
 
 		morph(rotateM, myImg);
 	}
+
 	public void rotateSelection(double alpha) {
-		int x1 = m_SelectStart.x < m_SelectEnd.x ? m_SelectStart.x : m_SelectEnd.x;
-		int y1 = m_SelectStart.y < m_SelectEnd.y ? m_SelectStart.y : m_SelectEnd.y;
-		int x2 = x1 + Math.abs(m_SelectEnd.x - m_SelectStart.x)-1;
-		int y2 = y1 + Math.abs(m_SelectEnd.y - m_SelectStart.y)-1;
-		
-		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2-x1)/ 2), -(y1 + (y2-y1)/ 2));
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
+		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
 		Matrix spinM = Matrix.inverseRotation(alpha);
-		Matrix backM = Matrix.inverseTranslation((x1 + (x2-x1)/ 2), (y1 + (y2-y1)/ 2));
+		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
 		Matrix rotateM = Matrix.multiply((Matrix.multiply(toTopLeftM, spinM)), backM);
-		//morphSelection(spinM);
+		// morphSelection(spinM);
 		morphSelection(rotateM);
 	}
 
@@ -150,23 +157,25 @@ public class Model {
 				} else {
 
 					myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0xffffffff;
-							//m_VecAllMyImages.get(0)
-							//.getOriginalPix()[y * MyImage.IMG_WIDTH + x];
+					// m_VecAllMyImages.get(0)
+					// .getOriginalPix()[y * MyImage.IMG_WIDTH + x];
 				}
 			}
 		}
 		myImg.newPixels();
 
 	}
+
 	public void morphSelection(Matrix m) {
-		int x1 = m_SelectStart.x < m_SelectEnd.x ? m_SelectStart.x : m_SelectEnd.x;
-		int y1 = m_SelectStart.y < m_SelectEnd.y ? m_SelectStart.y : m_SelectEnd.y;
-		int x2 = x1 + Math.abs(m_SelectEnd.x - m_SelectStart.x)-1;
-		int y2 = y1 + Math.abs(m_SelectEnd.y - m_SelectStart.y)-1;
-		
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
 		m = Matrix.multiply(m_WorkingLayerMyImage.getMatrix(), m);
 		m_WorkingLayerMyImage.setMatrix(m);
-		
+
 		for (int x = 0; x < MyImage.IMG_WIDTH; ++x) {
 			for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
 				ThreeDimVector vXY = new ThreeDimVector(x, y);
@@ -174,54 +183,62 @@ public class Model {
 				// System.out.println(vSrc.toString());
 				int posInOriginal = vSrc.getY() * MyImage.IMG_WIDTH + vSrc.getX();
 				// System.out.println("X: " + vSrc.getX() + "\t Y: " + vSrc.getY());
-				if (vSrc.getX() >= x1-m_bT && vSrc.getX() <= x2+m_bT && vSrc.getY() >= y1-m_bT && vSrc.getY() <= y2+m_bT){
-					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_WorkingLayerMyImage.getOriginalPix()[posInOriginal];
-					
+				if (vSrc.getX() >= x1 - m_bT && vSrc.getX() <= x2 + m_bT && vSrc.getY() >= y1 - m_bT
+						&& vSrc.getY() <= y2 + m_bT) {
+					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_WorkingLayerMyImage
+							.getOriginalPix()[posInOriginal];
+
 				} else {
 					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0;
-							//m_VecAllMyImages.get(0)
-							//.getOriginalPix()[y * MyImage.IMG_WIDTH + x];
+					// m_VecAllMyImages.get(0)
+					// .getOriginalPix()[y * MyImage.IMG_WIDTH + x];
 				}
 			}
 		}
 		m_WorkingLayerMyImage.newPixels();
-		
+
 	}
+
 	public void cutOut(MyImage cImg) {
 		m_alreadyCutOut = true;
 		System.out.println("cut");
-		int x1 = m_SelectStart.x < m_SelectEnd.x ? m_SelectStart.x : m_SelectEnd.x;
-		int y1 = m_SelectStart.y < m_SelectEnd.y ? m_SelectStart.y : m_SelectEnd.y;
-		int x2 = x1 + Math.abs(m_SelectEnd.x - m_SelectStart.x)-1;
-		int y2 = y1 + Math.abs(m_SelectEnd.y - m_SelectStart.y)-1;
-		
-		if(m_SelectStart.x != -1 && m_SelectEnd.x != -1) {
-			for(int x= 0; x< MyImage.IMG_WIDTH; ++x) {
-				for(int y=0; y < MyImage.IMG_HEIGHT; ++y) {
-					if(x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] =  cImg.getCurrentPix()[y*MyImage.IMG_WIDTH + x];
-						cImg.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = 0;
-						cImg.getCurrentPix()[y*MyImage.IMG_WIDTH + x] = 0xff000000;
-					}else if((x >= x1-m_bT && x < x2 + m_bT && y >= y1-m_bT && y < y1) ||
-							( ((x >= x1-m_bT && x < x1) || (x > x2 && x <= x2+m_bT) )&& (y >= y1 && y< y2)) ||
-							( x >= x1-m_bT && x < x2 + m_bT && y <= y2+m_bT && y > y2)){
-						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = 0xff882288;
-					}else {
-//						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = m_WorkingLayerMyImage.getCurrentPix()[y*MyImage.IMG_WIDTH + x];
-						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = 0;
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
+		if (m_StartPoint.x != -1 && m_EndPoint.x != -1) {
+			for (int x = 0; x < MyImage.IMG_WIDTH; ++x) {
+				for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
+					if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+						m_WorkingLayerMyImage.getOriginalPix()[y * MyImage.IMG_WIDTH + x] = cImg
+								.getCurrentPix()[y * MyImage.IMG_WIDTH + x];
+						cImg.getOriginalPix()[y * MyImage.IMG_WIDTH + x] = 0;
+						cImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0xff000000;
+					} else if ((x >= x1 - m_bT && x < x2 + m_bT && y >= y1 - m_bT && y < y1)
+							|| (((x >= x1 - m_bT && x < x1) || (x > x2 && x <= x2 + m_bT)) && (y >= y1 && y < y2))
+							|| (x >= x1 - m_bT && x < x2 + m_bT && y <= y2 + m_bT && y > y2)) {
+						m_WorkingLayerMyImage.getOriginalPix()[y * MyImage.IMG_WIDTH + x] = 0xff882288;
+					} else {
+						// m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] =
+						// m_WorkingLayerMyImage.getCurrentPix()[y*MyImage.IMG_WIDTH + x];
+						m_WorkingLayerMyImage.getOriginalPix()[y * MyImage.IMG_WIDTH + x] = 0;
 
 					}
-						
+
 				}
 			}
-			 m_WorkingLayerMyImage.setCurrentPix(m_WorkingLayerMyImage.getOriginalPix());;
+			m_WorkingLayerMyImage.setCurrentPix(m_WorkingLayerMyImage.getOriginalPix());
+			;
 			m_WorkingLayerMyImage.newPixels();
 			cImg.newPixels();
-		}else {
+		} else {
 			System.out.println("cutOut failed");
 		}
-		
+
 	}
+
 	public void cutOut() {
 		cutOut(m_CenterMyImg);
 	}
@@ -262,76 +279,116 @@ public class Model {
 		return Math.random() > 0.5 ? false : true;
 	}
 
-	public void setSelectStart(Point p) {
-		m_SelectStart.x = p.x;
-		m_SelectStart.y = p.y;
-	}
-
-	public void setSelectEnd(Point p) {
-		m_SelectEnd.x = p.x;
-		m_SelectEnd.y = p.y;
-		System.out.println("male");
-	}
-
 	public Point getStartPoint() {
-		return m_SelectStart;
+		return m_StartPoint;
 	}
 
 	public Point getEndPoint() {
-		return m_SelectEnd;
+		return m_EndPoint;
 	}
-	public void resetSelection() {
-		System.out.println("resetet");	
-		if(m_alreadyCutOut) {
+
+	public void clearWorkingLayerAndPoints() {
+		System.out.println("resetet");
+		if (m_alreadyCutOut) {
 			mergeWorkingLayer(m_CenterMyImg);
 		}
-		m_SelectStart.x =-1;
-		m_SelectEnd.x = -1;
-		m_alreadyCutOut = false;
+		m_StartPoint.x = -1;
+		m_EndPoint.x = -1;
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
 		m_WorkingLayerMyImage.fullReset();
 		m_WorkingLayerMyImage.newPixels();
 	}
+
 	public void mergeWorkingLayer(MyImage image) {
 		System.err.println("merge");
 		for (int i = 0; i < image.getCurrentPix().length; i++) {
-			if(m_WorkingLayerMyImage.getCurrentPix()[i] != 0)
-			image.getCurrentPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
+			if (m_WorkingLayerMyImage.getCurrentPix()[i] != 0)
+				image.getCurrentPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
 		}
 		image.newPixels();
 	}
+
 	public boolean isAlreadyCutOut() {
 		return m_alreadyCutOut;
 	}
 
-	public void drawSelection(Point startP, Point endP) {
+	public int[] calcPurePointsSelection() {
+		int[] purePoints = new int[4];
+		purePoints[0] = m_StartPoint.x < m_EndPoint.x ? m_StartPoint.x : m_EndPoint.x; // x1
+		purePoints[1] = m_StartPoint.y < m_EndPoint.y ? m_StartPoint.y : m_EndPoint.y; // y1
+		purePoints[2] = purePoints[0] + Math.abs(m_EndPoint.x - m_StartPoint.x); // x2
+		purePoints[3] = purePoints[1] + Math.abs(m_EndPoint.y - m_StartPoint.y); // y2
 
-		int x = startP.x < endP.x ? startP.x : endP.x;
-		int y = startP.y < endP.y ? startP.y : endP.y;
-		int w = Math.abs(endP.x - startP.x)-1;
-		int h = Math.abs(endP.y - startP.y)-1;
+		return purePoints;
+	}
+
+	public void drawSelection() {
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
-//		drawLineInArr(myImage.getCurrentPix(), x, y, x+w, y);
-//		drawLineInArr(myImage.getCurrentPix(), x, y, x, y+h);
-//		drawLineInArr(myImage.getCurrentPix(), x+w, y, x+w, y+h);
-//		drawLineInArr(myImage.getCurrentPix(), x, y+h, x+w, y+h);
-
-		for(int i= x; i< x+w; ++i) {
-			for(int j=y; j<y+h; ++j) {
-				if(i < x + m_bT || j < y + m_bT || i > x+w - m_bT || j > y+h - m_bT )
-					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0xff882288;
+		// drawLineInArr(myImage.getCurrentPix(), x, y, x+w, y);
+		// drawLineInArr(myImage.getCurrentPix(), x, y, x, y+h);
+		// drawLineInArr(myImage.getCurrentPix(), x+w, y, x+w, y+h);
+		// drawLineInArr(myImage.getCurrentPix(), x, y+h, x+w, y+h);
+		for (int x = x1; x < x2 + 1; ++x) {
+			for (int y = y1; y < y2 + 1; ++y) {
+				if (x < x1 || y < y1 || x > x2 || y > y2)
+					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0xff882288;
 				else
-					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0x99222299;					
+					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0x99222299;
 			}
 		}
 		m_WorkingLayerMyImage.newPixels();
 	}
-	
+
+	public void drawLine() {
+		int x1 = m_StartPoint.x;
+		int y1 = m_StartPoint.y;
+		int x2 = m_EndPoint.x;
+		int y2 = m_EndPoint.y;
+
+		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
+
+		try {
+			drawLineInArr(m_WorkingLayerMyImage.getCurrentPix(), x1, y1, x2, y2);
+
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.err.println("ERROROROROR");
+			System.out.println(m_EndPoint);
+		}
+		m_WorkingLayerMyImage.newPixels();
+	}
+
+	public void drawCircle(boolean filled) {
+		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
+		m_currentCircleRadius = (int) Math.hypot((m_StartPoint.x - m_EndPoint.x), (m_StartPoint.y - m_EndPoint.y));
+		System.err.println(m_currentCircleRadius);
+		drawCircle(m_WorkingLayerMyImage.getCurrentPix(), m_StartPoint.x, m_StartPoint.y, m_currentCircleRadius,
+				filled);
+		m_WorkingLayerMyImage.newPixels();
+	}
+
 	public void clearAllPix(int[] pix) {
 		for (int i = 0; i < pix.length; i++) {
 			pix[i] = 0;
 		}
 	}
+
+	public void setStartPoint(Point p) {
+		m_alreadyCutOut = false;
+		m_StartPoint.x = p.x;
+		m_StartPoint.y = p.y;
+	}
+
+	public void setEndPoint(Point p) {
+		m_EndPoint.x = p.x;
+		m_EndPoint.y = p.y;
+	}
+
 	public void drawLineInArr(int[] pix, int x0, int y0, int x1, int y1) {
 		final int dx = Math.abs(x0 - x1);
 		final int dy = Math.abs(y0 - y1);
@@ -366,13 +423,92 @@ public class Model {
 			}
 		}
 	}
-	
-	public void setPixelInArr(int[] pix, int x, int y) {
-		pix[y*MyImage.IMG_WIDTH + x] = 0xff000000 ;
+
+	public void drawCircle(int[] pix, int x0, int y0, int r, boolean filled) {
+		int y = 0;
+		int x = r;
+		int F = -r;
+		int dy = 1;
+		int dyx = -2 * r + 3;
+		while (y <= x) {
+			setPixelInArr(pix, x0, y0, x, y);
+			++y;
+			dy += 2;
+			dyx += 2;
+			if (F > 0) {
+				F += dyx;
+				--x;
+				dyx += 2;
+			} else {
+				F += dy;
+			}
+		}
 	}
+
+	public int calcColor(int x, int y) {
+		if (Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
+			double w = m_currentCircleRadius * 2;
+
+			double percent = (x - m_StartPoint.x + m_currentCircleRadius) / w;
+			int percentInt = (int) (percent * 100);
+			int color1 = 0xffff0000;
+			int color2 = 0xff0000ff;
+			System.out.println(percentInt);
+			return compPix(color1, color2, percentInt);
+		} else if (Mode.currentMode == Mode.LINE) {
+			double w = Math.abs(m_StartPoint.x - m_EndPoint.x);
+			double percent = Math.abs(x - m_StartPoint.x) / w;
+			int percentInt = (int)(percent *100);
+			int color1 = 0xffff0000;
+			int color2 = 0xff0000ff;
+			System.out.println(percentInt);
+			return compPix(color1, color2, percentInt);
+		} else {
+			return 0xffffffff;
+		}
+
+	}
+
+	public void setPixelInArr(int[] pix, int x, int y) {
+		if (x < MyImage.IMG_WIDTH && x >= 0 && y < MyImage.IMG_HEIGHT && y >= 0) {
+			pix[y * MyImage.IMG_WIDTH + x] = calcColor(x, y);
+		}
+	}
+
+	public void setPixelInArr(int[] pix, int x1, int y1, int x2, int y2) {
+		int color = 0xff000000;
+		setPixelInArr(pix, (x1 + x2) ,(y1 + y2));
+		setPixelInArr(pix, (x1 - x2), (y1 + y2));
+		setPixelInArr(pix, (x1 + x2), (y1 - y2));
+		setPixelInArr(pix, (x1 - x2), (y1 - y2));
+		setPixelInArr(pix, (x1 + y2), (y1 + x2));
+		setPixelInArr(pix, (x1 - y2), (y1 + x2));
+		setPixelInArr(pix, (x1 + y2), (y1 - x2));
+		setPixelInArr(pix, (x1 - y2), (y1 - x2));
+	}
+
 	public void changeMode(int i) {
-		Mode.currentMode  = i;
-		resetSelection();		
+		Mode.currentMode = i;
+		clearWorkingLayerAndPoints();
+	}
+
+	private int compColor(int x1, int x2, int p) {
+		return x1 + (x2 - x1) * p / 100;
+	}
+
+	private int compPix(int pix1, int pix2, int p) {
+		final int RED = compColor((pix1 >> 16) & 0xff, (pix2 >> 16) & 0xff, p);
+		final int GREEN = compColor((pix1 >> 8) & 0xff, (pix2 >> 8) & 0xff, p);
+		final int BLUE = compColor(pix1 & 0xff, pix2 & 0xff, p);
+		return 0xff000000 | (RED << 16) | (GREEN << 8) | BLUE;
+	}
+
+	public void shuffle(int[] pixelImg1, int[] pixelImg2, int p) {
+		for (int i = 0; i < (MyImage.IMG_WIDTH * MyImage.IMG_HEIGHT - 1); ++i) {
+			m_WorkingLayerMyImage.getCurrentPix()[i] = compPix(pixelImg1[i], pixelImg2[i], p);
+		}
+		// m_fadingMIS.newPixels();
+		m_WorkingLayerMyImage.newPixels();
 	}
 
 	static class ThreeDimVector {

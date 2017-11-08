@@ -16,7 +16,6 @@ public class Controller {
 	private View m_View;
 	private Model m_Model;
 	private int m_SwitchingDelay = 50;
-	private volatile boolean m_IsFading;
 
 	public Controller() {
 		m_Model = new Model();
@@ -88,11 +87,13 @@ public class Controller {
 		}
 	}
 	public void stopFading() {
-		m_IsFading = false;
+		m_View.getUtilityBar().getIconByModus(Mode.SELECT).activate();
+
+		m_Model.changeMode(Mode.SELECT);
 		m_View.getMyMenuBar().getMIfadingSwitcher().setText("start fading");		
 	}
 	public void startFading() {
-		m_IsFading = true;
+		m_Model.changeMode(Mode.FADING);
 		m_View.getMyMenuBar().getMIfadingSwitcher().setText("STOP fading");
 		if (m_View.getCenterImageComponent().getMyImage() == null)
 			new Fader(-1);
@@ -127,7 +128,7 @@ public class Controller {
 		});
 
 		m_View.getMyMenuBar().getMIfadingSwitcher().addActionListener(e -> {
-			if (!m_IsFading) {
+			if (Mode.currentMode != Mode.FADING) {
 				startFading();
 
 			} else {
@@ -257,37 +258,14 @@ public class Controller {
 
 	class Fader implements Runnable {
 		private Thread fadingThread;
-		private int[] m_fadingPixel = new int[MyImage.IMG_WIDTH * MyImage.IMG_HEIGHT];
-		private MemoryImageSource m_fadingMIS;
 		private int m_endingMyImagePos;
 
 		public Fader(int currentMyImagePos) {
+			System.out.println("neew Fader");
 			m_endingMyImagePos = currentMyImagePos;
-			m_fadingMIS = new MemoryImageSource(MyImage.IMG_WIDTH, MyImage.IMG_HEIGHT, m_fadingPixel, 0,
-					MyImage.IMG_WIDTH);
-			m_fadingMIS.setAnimated(true);
 			this.fadingThread = new Thread(this);
 			System.out.println("start");
 			this.fadingThread.start();
-		}
-
-		private int compColor(int x1, int x2, int p) {
-			return x1 + (x2 - x1) * p / 100;
-		}
-
-		private int compPix(int pix1, int pix2, int p) {
-			final int RED = compColor((pix1 >> 16) & 0xff, (pix2 >> 16) & 0xff, p);
-			final int GREEN = compColor((pix1 >> 8) & 0xff, (pix2 >> 8) & 0xff, p);
-			final int BLUE = compColor(pix1 & 0xff, pix2 & 0xff, p);
-			return 0xff000000 | (RED << 16) | (GREEN << 8) | BLUE;
-		}
-
-		public void shuffle(int[] pixelImg1, int[] pixelImg2, int p) {
-			for (int i = 0; i < (MyImage.IMG_WIDTH * MyImage.IMG_HEIGHT - 1); ++i) {
-				m_fadingPixel[i] = compPix(pixelImg1[i], pixelImg2[i], p);
-			}
-			// m_fadingMIS.newPixels();
-			m_View.getCenterImageComponent().setWorkingLayerMyImageWithPixelArr(m_fadingPixel);
 		}
 
 		@Override
@@ -311,7 +289,7 @@ public class Controller {
 				}
 			}
 
-			while (m_IsFading) {
+			while (Mode.currentMode == Mode.FADING) {
 				for (int i = 0; i < vecSize; ++i) {
 					if (imgVec.get((loopStart + i) % vecSize).isSelected()) {
 						posImg1 = (loopStart + i) % vecSize;
@@ -319,7 +297,6 @@ public class Controller {
 					}
 				}
 				if (posImg1 == -1) {
-					stopFading();
 					new InfoDialog(m_View, "Fading Error", "Es ist kein Bild ausgewählt");					
 					break;
 				}
@@ -331,22 +308,24 @@ public class Controller {
 					}
 				}
 				if (posImg2 == -1) {
-					stopFading();
 					new InfoDialog(m_View, "Fading Error", "Es ist nur ein Bild ausgewählt, es werden mindestens zwei benötigt!");					
 					break;
 				}
 
-				for (int k = 0; k <= 100 && m_IsFading; k = k + 3) {
+				for (int k = 0; k <= 100 && (Mode.currentMode == Mode.FADING); k = k + 3) {
 					try {
 						Thread.sleep(m_SwitchingDelay);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					shuffle(imgVec.get(posImg1).getCurrentPix(), imgVec.get(posImg2).getCurrentPix(), k);
+					m_Model.shuffle(imgVec.get(posImg1).getCurrentPix(), imgVec.get(posImg2).getCurrentPix(), k);
 				}
+				
 
 			}
+			System.out.println("rip fader");
+			stopFading();
 			if (m_endingMyImagePos != -1)
 				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(m_endingMyImagePos));
 		}

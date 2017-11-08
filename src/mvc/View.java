@@ -47,7 +47,7 @@ public class View extends JFrame {
 		private CenterPopupMenu m_Popup;
 		private Image m_Img;
 		private Image m_workImg;
-		private boolean m_SelectionStartInComp;
+		private boolean m_StartInComp;
 
 		public CenterImageComponent() {
 			m_Model.createWorkingImage(this);
@@ -61,8 +61,15 @@ public class View extends JFrame {
 			addMouseMotionListener(new MouseMotionAdapter() {
 				@Override
 				public void mouseDragged(MouseEvent e) {
-					if (Mode.currentMode == Mode.SELECT && SwingUtilities.isLeftMouseButton(e)) {
-						m_Model.drawSelection(m_Model.getStartPoint(), manageEndP(e));
+					if (SwingUtilities.isLeftMouseButton(e)) {
+						m_Model.setEndPoint(manageEndP(e));
+						if (Mode.currentMode == Mode.SELECT) {
+							m_Model.drawSelection();
+						}else if(Mode.currentMode == Mode.LINE) {
+							m_Model.drawLine();
+						}else if(Mode.currentMode == Mode.CIRCLE) {
+							m_Model.drawCircle(false);
+						}
 						repaint();
 					}
 
@@ -71,11 +78,11 @@ public class View extends JFrame {
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
-					if (Mode.currentMode == Mode.SELECT && SwingUtilities.isLeftMouseButton(e)) {
-						m_Model.resetSelection();
-						m_Model.setSelectStart(new Point((int) (e.getX() * getScalingFactorX()),
+					if (SwingUtilities.isLeftMouseButton(e) && Mode.currentMode != Mode.FADING) {
+						m_Model.clearWorkingLayerAndPoints();
+						m_Model.setStartPoint(new Point((int) (e.getX() * getScalingFactorX()),
 								(int) (e.getY() * getScalingFactorY())));
-						m_SelectionStartInComp = true;
+						m_StartInComp = true;
 					}
 				}
 
@@ -84,21 +91,27 @@ public class View extends JFrame {
 					if (e.isPopupTrigger()) {
 
 					} else {
-						m_Model.resetSelection();
+						if(Mode.currentMode != Mode.FADING)
+							m_Model.clearWorkingLayerAndPoints();
 						System.out.println("left");
 					}
 				}
 
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					if (Mode.currentMode == Mode.SELECT && m_SelectionStartInComp && m_Model.getStartPoint().x != -1
-							&& SwingUtilities.isLeftMouseButton(e)) {
-						Point endP = manageEndP(e);
-						m_Model.setSelectEnd(endP);
-						m_Model.drawSelection(m_Model.getStartPoint(), endP);
-						//m_Model.cutOut(m_MyImage);
+					if (SwingUtilities.isLeftMouseButton(e)) {
+						m_Model.setEndPoint(manageEndP(e));
+
+						if (Mode.currentMode == Mode.SELECT) {
+							m_Model.drawSelection();
+						} else if (Mode.currentMode == Mode.LINE) {
+							m_Model.drawLine();
+						}else if(Mode.currentMode == Mode.CIRCLE) {
+							m_Model.drawCircle(false);
+						}
+
 					}
-					m_SelectionStartInComp = false;
+					m_StartInComp = false;
 				}
 
 			});
@@ -131,13 +144,13 @@ public class View extends JFrame {
 				x = 0;
 			}
 			if (e.getX() > getWidth()) {
-				x = getWidth();
+				x = getWidth()-1;
 			}
 			if (e.getY() < 0) {
 				y = 0;
 			}
-			if (e.getY() > getHeight()) {
-				y = getHeight();
+			if (e.getY() > getHeight()-1) {
+				y = getHeight()-1;
 			}
 			return new Point((int) (x * getScalingFactorX()), (int) (y * getScalingFactorY()));
 		}
@@ -161,7 +174,9 @@ public class View extends JFrame {
 		public void setMyImage(MyImage myImage) {
 			m_MyImage = myImage;
 			m_Model.setCenterMyImage(m_MyImage);
-			m_Img = myImage.getImage();			
+			m_Img = myImage.getImage();
+			if (!m_Model.isAlreadyCutOut())
+				m_Model.clearWorkingLayerAndPoints();
 			repaint();
 		}
 

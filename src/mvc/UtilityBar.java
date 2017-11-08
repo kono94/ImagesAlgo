@@ -24,9 +24,11 @@ public class UtilityBar extends JComponent {
 	private Icon m_pfeil;
 	private Icon m_linie;
 	private Icon m_kreis;
-	private Icon[] m_allIcons = new Icon[3];
+	private Icon m_filledCircle;
+	private Icon[] m_allIcons = new Icon[4];
 	private Model m_Model;
 	private View m_View;
+	
 	public UtilityBar(View view, Model m) {
 		m_Model = m;
 		m_View = view;
@@ -38,6 +40,8 @@ public class UtilityBar extends JComponent {
 			m_allIcons[Mode.LINE] = m_linie; 
 			add(m_kreis);
 			m_allIcons[Mode.CIRCLE] = m_kreis; 
+			add(m_filledCircle);
+			m_allIcons[Mode.FILLED_CIRCLE] = m_filledCircle;
 			
 			for (int i = 0; i < m_allIcons.length; i++) {
 				if(Mode.currentMode == i) {
@@ -57,6 +61,7 @@ public class UtilityBar extends JComponent {
 			m_pfeil = new Icon(ImageIO.read(new File("icons/pfeil.png")), ImageIO.read(new File("icons/pfeil_active.png")), Mode.SELECT);
 			m_linie = new Icon(ImageIO.read(new File("icons/line.png")), ImageIO.read(new File("icons/line_active.png")), Mode.LINE);
 			m_kreis = new Icon(ImageIO.read(new File("icons/kreis.png")), ImageIO.read(new File("icons/kreis_active.png")), Mode.CIRCLE);
+			m_filledCircle = new Icon(ImageIO.read(new File("icons/filledCircle.png")), ImageIO.read(new File("icons/filledCircle_active.png")), Mode.FILLED_CIRCLE);
 
 			return true;
 		} catch (IOException e) {
@@ -65,7 +70,9 @@ public class UtilityBar extends JComponent {
 			return false;
 		}
 	}
-	
+	public Icon getIconByModus(int modus) {
+		return m_allIcons[modus];
+	}
 	class Icon extends JComponent{
 		private Image m_imgN;
 		private Image m_imgActive;
@@ -84,7 +91,7 @@ public class UtilityBar extends JComponent {
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if(!m_isActive)
+					if(Mode.currentMode != m_representedMode)
 						activate();
 				}
 			});
@@ -104,6 +111,7 @@ public class UtilityBar extends JComponent {
 		public boolean isActive() {
 			return m_isActive;
 		}
+		
 		public void activate() {
 			m_Model.changeMode(m_representedMode);
 			
