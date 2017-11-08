@@ -4,7 +4,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.*;
-import javax.swing.JPopupMenu;
+import javax.swing.border.EmptyBorder;
 
 public class CenterPopupMenu extends JPopupMenu {
 	private JMenuItem m_TranslateRandom;
@@ -19,8 +19,14 @@ public class CenterPopupMenu extends JPopupMenu {
 
 	private JMenuItem m_ScalingRandom;
 	private JMenuItem m_ScalingValue;
+	private JLabel m_SelectionLabel;
+	private JMenuItem m_CutOut;
 
 	public CenterPopupMenu() {
+		setBorder(new EmptyBorder(5, 20, 5, 0));
+		m_SelectionLabel = new JLabel("MORPH SELECTION", SwingConstants.CENTER);
+		m_SelectionLabel.setBorder(new EmptyBorder(5, 0, 5, 5));
+		m_CutOut = new JMenuItem(" CutOut ");
 		m_TranslateRandom = new JMenuItem(" Translate Random ");
 		m_TranslateValue = new JMenuItem(" Translate Custom ");
 		m_ShearingXRandom = new JMenuItem(" Shearing X Random ");
@@ -30,7 +36,10 @@ public class CenterPopupMenu extends JPopupMenu {
 		m_RotateValue = new JMenuItem(" Rotate Custom ");
 		m_ScalingRandom = new JMenuItem(" Scaling Random ");
 		m_ScalingValue = new JMenuItem(" Scaling Custom ");
-
+		
+		add(m_SelectionLabel);
+		add(m_CutOut);
+		addSeparator();
 		add(m_TranslateRandom);
 		add(m_TranslateValue);
 		addSeparator();
@@ -46,14 +55,28 @@ public class CenterPopupMenu extends JPopupMenu {
 	}
 
 	class PopupMouseListener extends MouseAdapter {
-		public void mousePressed(MouseEvent e) {
-			if (e.isPopupTrigger())
-				doPop(e);
-		}
+//		public void mousePressed(MouseEvent e) {
+//			if (e.isPopupTrigger()) {
+//				if(Mode.currentMode == Mode.SELECT) {
+//					m_SelectionLabel.setVisible(false);
+//				}else {
+//					m_SelectionLabel.setVisible(true);
+//				}
+//				doPop(e);
+//			}
+//				
+//		}
 
 		public void mouseReleased(MouseEvent e) {
-			if (e.isPopupTrigger())
+			if (e.isPopupTrigger()) {
+				if(Mode.currentMode == Mode.SELECT) {
+					m_SelectionLabel.setVisible(true);
+				}else {
+					m_SelectionLabel.setVisible(false);
+				}
 				doPop(e);
+			}
+				
 		}
 
 		private void doPop(MouseEvent e) {
@@ -95,5 +118,8 @@ public class CenterPopupMenu extends JPopupMenu {
 
 	public JMenuItem getMIScalingValue() {
 		return m_ScalingValue;
+	}
+	public JMenuItem getMICutOut() {
+		return m_CutOut;
 	}
 }

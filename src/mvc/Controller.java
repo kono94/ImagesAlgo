@@ -149,14 +149,51 @@ public class Controller {
 				}
 			}
 		});
+		
+		m_View.getMyMenuBar().getMIrotateSel().addActionListener(e->{
+			if(m_Model.getStartPoint().x != -1) {
+				if(!m_Model.isAlreadyCutOut()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+				m_Model.rotateSelection(0.20);			
+			}else
+				System.out.println("keine auswahl");
+				
+		});
+		
+		m_View.getMyMenuBar().getMItransSel().addActionListener(e->{
+			if(m_Model.getStartPoint().x != -1) {
+				if(!m_Model.isAlreadyCutOut()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+				//m_Model.translateSelection(50, 50);			
+			}else
+				System.out.println("keine auswahl");
+		});
 	}
 
 	public void applyPopupListeners() {
+		m_View.getCenterImageComponent().getPopup().getMICutOut().addActionListener(e->{
+			if(!m_Model.isAlreadyCutOut())
+			m_Model.cutOut();
+			else {
+				new InfoDialog(m_View, "Info", false, "Hat keinen Effekt", true);
+			}
+		});
 		m_View.getCenterImageComponent().getPopup().getMITranslateRandom().addActionListener(e -> {
 			// [0] = horizontal, [1] = vertical
 			int[] random = new int[2];
 			random = m_Model.getRandomValuesForTranslation();
-			m_Model.translate(m_View.getCenterImageComponent().getMyImage(), random[0], random[1]);
+			if(m_Model.getEndPoint().x == -1) {
+				System.out.println("KEINE AUSWAHL");
+				m_Model.translate(m_View.getCenterImageComponent().getMyImage(), random[0], random[1]);
+			}else {
+				if(!m_Model.isAlreadyCutOut()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+				m_Model.translateSelection(random[0], random[1]);		
+			}
+			
 		});
 
 		m_View.getCenterImageComponent().getPopup().getMITranslateValue().addActionListener(e -> {

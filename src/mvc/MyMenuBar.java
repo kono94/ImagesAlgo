@@ -20,6 +20,9 @@ public class MyMenuBar extends JMenuBar {
 	private JMenuItem m_MIfadeSwitcher;
 	private JMenu m_MhistoMenu;
 	private JMenuItem m_MIcreateHisto;
+	private JMenu m_MselMenu;
+	private JMenuItem m_MIrotateSel;
+	private JMenuItem m_MItransSel;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("sans-serif", Font.PLAIN, 18);
@@ -46,9 +49,17 @@ public class MyMenuBar extends JMenuBar {
 		m_MIcreateHisto = new JMenuItem("Erstelle Datei mit Historgramm");
 		m_MhistoMenu.add(m_MIcreateHisto);
 		
+		m_MselMenu = new JMenu("Selection");
+		m_MIrotateSel = new JMenuItem("rotate");
+		m_MItransSel = new JMenuItem("translate");
+		m_MselMenu.add(m_MIrotateSel);
+		m_MselMenu.add(m_MItransSel);
+		
+		
 		this.add(m_MfileMenu);
 		this.add(m_MfadingMenu);
 		this.add(m_MhistoMenu);
+		this.add(m_MselMenu);
 	}
 
 	public JMenu getMfileMenu() {
@@ -84,5 +95,11 @@ public class MyMenuBar extends JMenuBar {
 	}
 	public JMenuItem getMIcreateHisto() {
 		return m_MIcreateHisto;
+	}
+	public JMenuItem getMIrotateSel() {
+		return m_MIrotateSel;
+	}
+	public JMenuItem getMItransSel() {
+		return m_MItransSel;
 	}
 }

@@ -67,7 +67,7 @@ public class MyImage extends JComponent {
 				// right clicks adds the component to the iteration of
 				// diplaying them one after another
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					updateImgSrcPixelArrayTo(m_OriginalPix);
+				//	resetToOriginal();
 					centerImageComponent.setMyImage(MyImage.this);
 				}
 
@@ -104,15 +104,28 @@ public class MyImage extends JComponent {
 		for (int i = 0; i < m_CurrentPix.length-1; i++) {			
 			m_CurrentPix[i] >>= Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4")));
 		}
-		updateImgSrcPixelArrayTo(m_CurrentPix);
+		m_ImgSrc.newPixels();
 		repaint();
 	}
 	
-	public void updateImgSrcPixelArrayTo(int[] a) {
-			m_ImgSrc.newPixels(a, getColorModel(), 0, IMG_WIDTH);		
-			repaint();
+	public void resetToOriginal() {
+		hardCopyArray(m_CurrentPix, m_OriginalPix);
+		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
+		m_ImgSrc.newPixels();
 	}
 	
+	public void fullReset() {
+		makeTransparent();
+		hardCopyArray(m_CurrentPix, m_OriginalPix);
+		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
+		m_ImgSrc.newPixels();
+	}
+	
+	public void makeTransparent() {
+		for (int i = 0; i < m_OriginalPix.length; i++) {
+			m_OriginalPix[i] = 0;
+		}
+	}
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);

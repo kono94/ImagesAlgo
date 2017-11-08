@@ -17,7 +17,10 @@ public class Model {
 	private boolean sw = false;
 	private Point m_SelectStart = new Point(-1, -1);
 	private Point m_SelectEnd = new Point(-1, -1);
+	private boolean m_alreadyCutOut = false;
 	private MyImage m_WorkingLayerMyImage;
+	private int m_bT = 0;
+	private MyImage m_CenterMyImg;
 
 	public Model() {
 		m_VecAllMyImages = new Vector<MyImage>(5, 0);
@@ -35,6 +38,9 @@ public class Model {
 	}
 	public MyImage getWorkingMyImage() {
 		return m_WorkingLayerMyImage;
+	}
+	public void setCenterMyImage(MyImage image) {
+		m_CenterMyImg = image;
 	}
 	public boolean createHistogramm(MyImage img) {
 		PrintWriter writer;
@@ -68,6 +74,11 @@ public class Model {
 		//Matrix transM = Matrix.inverseXShearing(-3.4);
 		morph(transM, myImg);
 	}
+	public void translateSelection(int h, int v) {
+		Matrix transM = Matrix.inverseTranslation(h, v);
+		morphSelection(transM);
+	}
+
 
 	public void rotate(MyImage myImg, double alpha, boolean spinAroundMiddle) {
 		Matrix rotateM;
@@ -81,6 +92,19 @@ public class Model {
 		}
 
 		morph(rotateM, myImg);
+	}
+	public void rotateSelection(double alpha) {
+		int x1 = m_SelectStart.x < m_SelectEnd.x ? m_SelectStart.x : m_SelectEnd.x;
+		int y1 = m_SelectStart.y < m_SelectEnd.y ? m_SelectStart.y : m_SelectEnd.y;
+		int x2 = x1 + Math.abs(m_SelectEnd.x - m_SelectStart.x)-1;
+		int y2 = y1 + Math.abs(m_SelectEnd.y - m_SelectStart.y)-1;
+		
+		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2-x1)/ 2), -(y1 + (y2-y1)/ 2));
+		Matrix spinM = Matrix.inverseRotation(alpha);
+		Matrix backM = Matrix.inverseTranslation((x1 + (x2-x1)/ 2), (y1 + (y2-y1)/ 2));
+		Matrix rotateM = Matrix.multiply((Matrix.multiply(toTopLeftM, spinM)), backM);
+		//morphSelection(spinM);
+		morphSelection(rotateM);
 	}
 
 	public void shearX(MyImage myImg, double shX) {
@@ -107,7 +131,7 @@ public class Model {
 		// System.out.println(m.toString());
 		// System.out.println(myImg.getMatrix().toString());
 
-		m = Matrix.multiply(m, myImg.getMatrix());
+		m = Matrix.multiply(myImg.getMatrix(), m);
 		myImg.setMatrix(m);
 
 		System.out.println(m.toString());
@@ -131,8 +155,75 @@ public class Model {
 				}
 			}
 		}
-		myImg.updateImgSrcPixelArrayTo(myImg.getCurrentPix());
+		myImg.newPixels();
 
+	}
+	public void morphSelection(Matrix m) {
+		int x1 = m_SelectStart.x < m_SelectEnd.x ? m_SelectStart.x : m_SelectEnd.x;
+		int y1 = m_SelectStart.y < m_SelectEnd.y ? m_SelectStart.y : m_SelectEnd.y;
+		int x2 = x1 + Math.abs(m_SelectEnd.x - m_SelectStart.x)-1;
+		int y2 = y1 + Math.abs(m_SelectEnd.y - m_SelectStart.y)-1;
+		
+		m = Matrix.multiply(m_WorkingLayerMyImage.getMatrix(), m);
+		m_WorkingLayerMyImage.setMatrix(m);
+		
+		for (int x = 0; x < MyImage.IMG_WIDTH; ++x) {
+			for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
+				ThreeDimVector vXY = new ThreeDimVector(x, y);
+				ThreeDimVector vSrc = Matrix.multiplyWithVector(m, vXY);
+				// System.out.println(vSrc.toString());
+				int posInOriginal = vSrc.getY() * MyImage.IMG_WIDTH + vSrc.getX();
+				// System.out.println("X: " + vSrc.getX() + "\t Y: " + vSrc.getY());
+				if (vSrc.getX() >= x1-m_bT && vSrc.getX() <= x2+m_bT && vSrc.getY() >= y1-m_bT && vSrc.getY() <= y2+m_bT){
+					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_WorkingLayerMyImage.getOriginalPix()[posInOriginal];
+					
+				} else {
+					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0;
+							//m_VecAllMyImages.get(0)
+							//.getOriginalPix()[y * MyImage.IMG_WIDTH + x];
+				}
+			}
+		}
+		m_WorkingLayerMyImage.newPixels();
+		
+	}
+	public void cutOut(MyImage cImg) {
+		m_alreadyCutOut = true;
+		System.out.println("cut");
+		int x1 = m_SelectStart.x < m_SelectEnd.x ? m_SelectStart.x : m_SelectEnd.x;
+		int y1 = m_SelectStart.y < m_SelectEnd.y ? m_SelectStart.y : m_SelectEnd.y;
+		int x2 = x1 + Math.abs(m_SelectEnd.x - m_SelectStart.x)-1;
+		int y2 = y1 + Math.abs(m_SelectEnd.y - m_SelectStart.y)-1;
+		
+		if(m_SelectStart.x != -1 && m_SelectEnd.x != -1) {
+			for(int x= 0; x< MyImage.IMG_WIDTH; ++x) {
+				for(int y=0; y < MyImage.IMG_HEIGHT; ++y) {
+					if(x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] =  cImg.getCurrentPix()[y*MyImage.IMG_WIDTH + x];
+						cImg.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = 0;
+						cImg.getCurrentPix()[y*MyImage.IMG_WIDTH + x] = 0xff000000;
+					}else if((x >= x1-m_bT && x < x2 + m_bT && y >= y1-m_bT && y < y1) ||
+							( ((x >= x1-m_bT && x < x1) || (x > x2 && x <= x2+m_bT) )&& (y >= y1 && y< y2)) ||
+							( x >= x1-m_bT && x < x2 + m_bT && y <= y2+m_bT && y > y2)){
+						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = 0xff882288;
+					}else {
+//						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = m_WorkingLayerMyImage.getCurrentPix()[y*MyImage.IMG_WIDTH + x];
+						m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] = 0;
+
+					}
+						
+				}
+			}
+			 m_WorkingLayerMyImage.setCurrentPix(m_WorkingLayerMyImage.getOriginalPix());;
+			m_WorkingLayerMyImage.newPixels();
+			cImg.newPixels();
+		}else {
+			System.out.println("cutOut failed");
+		}
+		
+	}
+	public void cutOut() {
+		cutOut(m_CenterMyImg);
 	}
 
 	public int[] getRandomValuesForTranslation() {
@@ -190,33 +281,47 @@ public class Model {
 		return m_SelectEnd;
 	}
 	public void resetSelection() {
-		System.out.println("resetet");
+		System.out.println("resetet");	
+		if(m_alreadyCutOut) {
+			mergeWorkingLayer(m_CenterMyImg);
+		}
 		m_SelectStart.x =-1;
 		m_SelectEnd.x = -1;
+		m_alreadyCutOut = false;
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
+		m_WorkingLayerMyImage.fullReset();
 		m_WorkingLayerMyImage.newPixels();
+	}
+	public void mergeWorkingLayer(MyImage image) {
+		System.err.println("merge");
+		for (int i = 0; i < image.getCurrentPix().length; i++) {
+			if(m_WorkingLayerMyImage.getCurrentPix()[i] != 0)
+			image.getCurrentPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
+		}
+		image.newPixels();
+	}
+	public boolean isAlreadyCutOut() {
+		return m_alreadyCutOut;
 	}
 
 	public void drawSelection(Point startP, Point endP) {
 
 		int x = startP.x < endP.x ? startP.x : endP.x;
 		int y = startP.y < endP.y ? startP.y : endP.y;
-		int w = Math.abs(endP.x - startP.x);
-		int h = Math.abs(endP.y - startP.y);
+		int w = Math.abs(endP.x - startP.x)-1;
+		int h = Math.abs(endP.y - startP.y)-1;
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
 //		drawLineInArr(myImage.getCurrentPix(), x, y, x+w, y);
 //		drawLineInArr(myImage.getCurrentPix(), x, y, x, y+h);
 //		drawLineInArr(myImage.getCurrentPix(), x+w, y, x+w, y+h);
 //		drawLineInArr(myImage.getCurrentPix(), x, y+h, x+w, y+h);
-		int bor = 3;
-		for(int i= x; i< x+w+1; ++i) {
-			for(int j=y; j<y+h+1; ++j) {
-				if(i < x + bor || j < y + bor || i > x+w - bor || j > y+h - bor )
+
+		for(int i= x; i< x+w; ++i) {
+			for(int j=y; j<y+h; ++j) {
+				if(i < x + m_bT || j < y + m_bT || i > x+w - m_bT || j > y+h - m_bT )
 					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0xff882288;
 				else
-					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0x99222299;
-
-					
+					m_WorkingLayerMyImage.getCurrentPix()[j*MyImage.IMG_WIDTH + i] = 0x99222299;					
 			}
 		}
 		m_WorkingLayerMyImage.newPixels();

@@ -48,12 +48,11 @@ public class View extends JFrame {
 		private Image m_Img;
 		private Image m_workImg;
 		private boolean m_SelectionStartInComp;
-		
-		
+
 		public CenterImageComponent() {
 			m_Model.createWorkingImage(this);
 			m_workImg = m_Model.getWorkingMyImage().getImage();
-			
+
 			m_Popup = new CenterPopupMenu();
 			add(m_Popup);
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -62,33 +61,42 @@ public class View extends JFrame {
 			addMouseMotionListener(new MouseMotionAdapter() {
 				@Override
 				public void mouseDragged(MouseEvent e) {
-					if (Mode.currentMode == Mode.SELECT) {
+					if (Mode.currentMode == Mode.SELECT && SwingUtilities.isLeftMouseButton(e)) {
 						m_Model.drawSelection(m_Model.getStartPoint(), manageEndP(e));
 						repaint();
 					}
 
-					
 				}
 			});
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
-					if (Mode.currentMode == Mode.SELECT) {
-						m_Model.setSelectStart(new Point((int)(e.getX() * getScalingFactorX()),(int)( e.getY() * getScalingFactorY())));
+					if (Mode.currentMode == Mode.SELECT && SwingUtilities.isLeftMouseButton(e)) {
+						m_Model.resetSelection();
+						m_Model.setSelectStart(new Point((int) (e.getX() * getScalingFactorX()),
+								(int) (e.getY() * getScalingFactorY())));
 						m_SelectionStartInComp = true;
 					}
 				}
+
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					m_Model.resetSelection();
+					if (e.isPopupTrigger()) {
+
+					} else {
+						m_Model.resetSelection();
+						System.out.println("left");
+					}
 				}
 
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					if (Mode.currentMode == Mode.SELECT && m_SelectionStartInComp && m_Model.getStartPoint().x != -1) {
+					if (Mode.currentMode == Mode.SELECT && m_SelectionStartInComp && m_Model.getStartPoint().x != -1
+							&& SwingUtilities.isLeftMouseButton(e)) {
 						Point endP = manageEndP(e);
 						m_Model.setSelectEnd(endP);
-						m_Model.drawSelection(m_Model.getStartPoint(),endP);
+						m_Model.drawSelection(m_Model.getStartPoint(), endP);
+						//m_Model.cutOut(m_MyImage);
 					}
 					m_SelectionStartInComp = false;
 				}
@@ -101,41 +109,47 @@ public class View extends JFrame {
 			if (m_Img != null) {
 				// scales the image to fill "bigImagePercent" percent of the
 				// CENTER
-				//int x = getWidth() / 2 - getWidth() / 2 * bigImagePercent / 100;
-				//int y = getHeight() / 2 - getHeight() / 2 * bigImagePercent / 100;
+				// int x = getWidth() / 2 - getWidth() / 2 * bigImagePercent / 100;
+				// int y = getHeight() / 2 - getHeight() / 2 * bigImagePercent / 100;
 				int x = 0;
 				int y = 0;
 				int w = getWidth();
 				int h = getHeight();
 
 				// draw the image
+
 				g.drawImage(m_Img, x, y, w, h, this);
-				g.drawImage(m_workImg, x, y, w ,h , this);				
+				g.drawImage(m_workImg, x, y, w, h, this);
 			}
 		}
+
 		public Point manageEndP(MouseEvent e) {
-			int x,y;
+			int x, y;
 			x = e.getX();
 			y = e.getY();
-			if(e.getX() >= 0 &&  e.getX() < getWidth() && e.getY() >= 0 && e.getY() < getHeight()) {
-				x = e.getX(); y = e.getY();
-			}else if(e.getX() < 0) {
-					x = 0;				
-			}else if(e.getX() > getWidth()){
-				 x = getWidth();
-			}else if(e.getY() < 0) {
-				y= 0;
-			}else if(e.getY() > getHeight()) {
+			if (e.getX() < 0) {
+				x = 0;
+			}
+			if (e.getX() > getWidth()) {
+				x = getWidth();
+			}
+			if (e.getY() < 0) {
+				y = 0;
+			}
+			if (e.getY() > getHeight()) {
 				y = getHeight();
 			}
-			return new Point((int)(x * getScalingFactorX()),(int)( y * getScalingFactorY()));
+			return new Point((int) (x * getScalingFactorX()), (int) (y * getScalingFactorY()));
 		}
+
 		public double getScalingFactorX() {
-			return (double)MyImage.IMG_WIDTH / (double)getWidth();
+			return (double) MyImage.IMG_WIDTH / (double) getWidth();
 		}
+
 		public double getScalingFactorY() {
 			return (double) MyImage.IMG_HEIGHT / (double) getHeight();
 		}
+
 		public CenterPopupMenu getPopup() {
 			return m_Popup;
 		}
@@ -146,7 +160,8 @@ public class View extends JFrame {
 
 		public void setMyImage(MyImage myImage) {
 			m_MyImage = myImage;
-			m_Img = myImage.getImage();
+			m_Model.setCenterMyImage(m_MyImage);
+			m_Img = myImage.getImage();			
 			repaint();
 		}
 
