@@ -28,11 +28,9 @@ public class UtilityBar extends JComponent {
 	private Icon m_linie;
 	private Icon m_kreis;
 	private Icon m_filledCircle;
-	private Icon[] m_allIcons = new Icon[6]; // Those who change Mode
+	private Icon[] m_allIcons = new Icon[4]; // Those who change Mode
 	private Model m_Model;
 	private View m_View;
-	private Icon m_plus;
-	private Icon m_minus;
 	private Icon m_moveTop;
 	private Icon m_moveRight;
 	private Icon m_moveBottom;
@@ -87,10 +85,6 @@ public class UtilityBar extends JComponent {
 			m_allIcons[Mode.CIRCLE] = m_kreis;
 			add(m_filledCircle);
 			m_allIcons[Mode.FILLED_CIRCLE] = m_filledCircle;
-			add(m_plus);
-			m_allIcons[Mode.PLUS] = m_plus;
-			add(m_minus);
-			m_allIcons[Mode.MINUS] = m_minus;
 			add(m_moveTop);
 			add(m_moveRight);
 			add(m_moveBottom);
@@ -157,10 +151,6 @@ public class UtilityBar extends JComponent {
 					ImageIO.read(new File("icons/kreis_active.png")), Mode.CIRCLE);
 			m_filledCircle = new Icon(ImageIO.read(new File("icons/filledCircle.png")),
 					ImageIO.read(new File("icons/filledCircle_active.png")), Mode.FILLED_CIRCLE);
-			m_plus = new Icon(ImageIO.read(new File("icons/plus.png")), ImageIO.read(new File("icons/plus_active.png")),
-					Mode.PLUS);
-			m_minus = new Icon(ImageIO.read(new File("icons/minus.png")),
-					ImageIO.read(new File("icons/minus_active.png")), Mode.MINUS);
 			m_moveTop = new Icon(ImageIO.read(new File("icons/moveTop.png")),
 					ImageIO.read(new File("icons/moveTopPressed.png")), Model.MOVE_TOP);
 			m_moveRight = new Icon(ImageIO.read(new File("icons/moveRight.png")),

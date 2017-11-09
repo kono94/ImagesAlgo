@@ -50,13 +50,14 @@ public class View extends JFrame {
 		private CenterPopupMenu m_Popup;
 		private Image m_Img;
 		private Image m_workImg;
-		private boolean m_StartInComp; 
+		private boolean m_StartInComp;
 		private Cursor m_crosshairCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 		private Cursor m_plusCursor;
 
 		public CenterImageComponent() {
 			try {
-				m_plusCursor = getToolkit().createCustomCursor(ImageIO.read(new File("icons/plusCursor.png")), new Point(10,10), "woo");
+				m_plusCursor = getToolkit().createCustomCursor(ImageIO.read(new File("icons/plusCursor.png")),
+						new Point(10, 10), "woo");
 			} catch (HeadlessException | IndexOutOfBoundsException | IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -69,6 +70,17 @@ public class View extends JFrame {
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			setPreferredSize(new Dimension(1280, 720));
 			addMouseListener(m_Popup.new PopupMouseListener());
+			addMouseWheelListener(e->{
+				System.out.println(e.getWheelRotation());
+				if(e.getWheelRotation() < 0) {
+						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
+								(int) (e.getY() * getScalingFactorY())), 0.9);
+				}else {
+						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
+								(int) (e.getY() * getScalingFactorY())), 1.1);
+					
+				}
+			});
 			addMouseMotionListener(new MouseMotionAdapter() {
 				@Override
 				public void mouseDragged(MouseEvent e) {
@@ -76,21 +88,22 @@ public class View extends JFrame {
 						m_Model.setEndPoint(manageEndP(e));
 						if (Mode.currentMode == Mode.SELECT) {
 							m_Model.drawSelection();
-						}else if(Mode.currentMode == Mode.LINE) {
+						} else if (Mode.currentMode == Mode.LINE) {
 							m_Model.drawLine();
-						}else if(Mode.currentMode == Mode.CIRCLE) {
+						} else if (Mode.currentMode == Mode.CIRCLE) {
 							m_Model.drawCircle();
-						}else if(Mode.currentMode == Mode.FILLED_CIRCLE) {
+						} else if (Mode.currentMode == Mode.FILLED_CIRCLE) {
 							m_Model.drawCircle();
 						}
 						repaint();
 					}
 
 				}
+
 				@Override
 				public void mouseMoved(MouseEvent e) {
-					if(Mode.currentMode == Mode.PLUS)
-						setCursor(m_plusCursor);
+//					if (Mode.currentMode == Mode.PLUS)
+//						setCursor(m_plusCursor);
 				}
 			});
 			addMouseListener(new MouseAdapter() {
@@ -106,20 +119,12 @@ public class View extends JFrame {
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if(Mode.currentMode == Mode.PLUS) {						
-						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
-								(int) (e.getY() * getScalingFactorY())), 1.1);
-					}
-					if(Mode.currentMode == Mode.MINUS) {
-						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
-								(int) (e.getY() * getScalingFactorY())), 0.9);
-					}
 					if (e.isPopupTrigger()) {
-						
+
 					} else {
-						if(Mode.currentMode != Mode.FADING && m_Model.m_StartPoint.x != -1)
+						if (Mode.currentMode != Mode.FADING && m_Model.m_StartPoint.x != -1)
 							m_Model.clearWorkingLayerAndPoints();
-						
+
 						System.out.println("left");
 					}
 				}
@@ -134,11 +139,13 @@ public class View extends JFrame {
 						} else if (Mode.currentMode == Mode.LINE) {
 							m_Model.generateRandomColors();
 							m_Model.drawLine();
-						}else if(Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
+						} else if (Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
 							m_Model.drawCircle();
-							m_Model.generateRandomColors();
-							m_UtilityBar.getColor1Button().setBackground(new Color(m_Model.getColor1()));
-							m_UtilityBar.getColor2Button().setBackground(new Color(m_Model.getColor2()));
+							if (m_Model.isUsingRandomColors()) {
+								m_Model.generateRandomColors();
+								m_UtilityBar.getColor1Button().setBackground(new Color(m_Model.getColor1()));
+								m_UtilityBar.getColor2Button().setBackground(new Color(m_Model.getColor2()));
+							}
 						}
 
 					}
@@ -174,13 +181,13 @@ public class View extends JFrame {
 				x = 0;
 			}
 			if (e.getX() > getWidth()) {
-				x = getWidth()-1;
+				x = getWidth() - 1;
 			}
 			if (e.getY() < 0) {
 				y = 0;
 			}
-			if (e.getY() > getHeight()-1) {
-				y = getHeight()-1;
+			if (e.getY() > getHeight() - 1) {
+				y = getHeight() - 1;
 			}
 			return new Point((int) (x * getScalingFactorX()), (int) (y * getScalingFactorY()));
 		}

@@ -22,6 +22,8 @@ public class MyMenuBar extends JMenuBar {
 	private JMenuItem m_MIcreateHisto;
 	private JMenu m_MselMenu;
 	private JMenuItem m_MIputIn;
+	private JMenuItem m_MIrandomColor;
+	private JMenu m_MsettingsMenu;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("sans-serif", Font.PLAIN, 18);
@@ -52,11 +54,16 @@ public class MyMenuBar extends JMenuBar {
 		m_MIputIn = new JMenuItem("Paste In");
 		m_MselMenu.add(m_MIputIn);
 		
+		m_MsettingsMenu = new JMenu("Settings");
+		m_MIrandomColor = new JMenuItem("start using random colors");
+		
+		m_MsettingsMenu.add(m_MIrandomColor);
 		
 		this.add(m_MfileMenu);
 		this.add(m_MfadingMenu);
 		this.add(m_MhistoMenu);
 		this.add(m_MselMenu);
+		this.add(m_MsettingsMenu);
 	}
 
 	public JMenu getMfileMenu() {
@@ -95,6 +102,10 @@ public class MyMenuBar extends JMenuBar {
 	}
 	public JMenuItem getMIputIn() {
 		return m_MIputIn;
+	}
+	
+	public JMenuItem getMIrandomColor() {
+		return m_MIrandomColor;
 	}
 	
 }

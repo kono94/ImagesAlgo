@@ -26,7 +26,7 @@ public class Model {
 	private MyImage m_CenterMyImg;
 	private int m_Color1;
 	private int m_Color2;
-	private volatile boolean m_randomColors = true;
+	private volatile boolean m_randomColors;
 	public static int MOVE_TOP = 1, MOVE_RIGHT = 2, MOVE_BOTTOM = 3, MOVE_LEFT = 4, SHEARX = 5, SHEARY = 6,
 			SCALE_BIGGER = 7, SCALE_SMALLER = 8, ROTATE_LEFT = 9, ROTATE_RIGHT = 10;
 
@@ -668,6 +668,12 @@ public class Model {
 
 	public void setColor2(int c) {
 		m_Color2 = c;
+	}
+	public void useRandomColors(boolean b){
+		m_randomColors = b;
+	}
+	public boolean isUsingRandomColors() {
+		return m_randomColors;
 	}
 
 	static class ThreeDimVector {

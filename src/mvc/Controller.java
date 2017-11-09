@@ -1,5 +1,6 @@
 package mvc;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.event.KeyAdapter;
@@ -173,6 +174,20 @@ public class Controller {
 		
 		m_View.getMyMenuBar().getMIputIn().addActionListener(e->{
 			m_Model.mergeWorkingLayer(m_View.getCenterImageComponent().getMyImage());	
+		});
+		
+		m_View.getMyMenuBar().getMIrandomColor().addActionListener(e->{
+			if(m_Model.isUsingRandomColors()) {
+				m_Model.useRandomColors(false);
+				m_View.getMyMenuBar().getMIrandomColor().setText("start using random colors");
+			}else {
+				m_Model.useRandomColors(true);
+				m_Model.generateRandomColors();
+				m_View.getUtilityBar().getColor1Button().setBackground(new Color(m_Model.getColor1()));
+				m_View.getUtilityBar().getColor2Button().setBackground(new Color(m_Model.getColor2()));
+				m_View.getMyMenuBar().getMIrandomColor().setText("stop using random colors");
+			}
+			
 		});
 	}
 
