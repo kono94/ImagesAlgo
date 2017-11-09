@@ -17,7 +17,6 @@ public class Model {
 	// Vector in which every component is saved, to loop through and
 	// look for selected ones to display them in the center
 	private Vector<MyImage> m_VecAllMyImages;
-	private boolean sw = false;
 	public Point m_StartPoint = new Point(-1, -1);
 	public Point m_EndPoint = new Point(-1, -1);
 	private int m_currentCircleRadius;
@@ -27,6 +26,7 @@ public class Model {
 	private MyImage m_CenterMyImg;
 	private int m_Color1;
 	private int m_Color2;
+	private volatile boolean m_randomColors = true;
 	public static int MOVE_TOP = 1, MOVE_RIGHT = 2, MOVE_BOTTOM = 3, MOVE_LEFT = 4, SHEARX = 5, SHEARY = 6,
 			SCALE_BIGGER = 7, SCALE_SMALLER = 8, ROTATE_LEFT = 9, ROTATE_RIGHT = 10;
 
@@ -171,7 +171,7 @@ public class Model {
 		Matrix rotateM = Matrix.multiply((Matrix.multiply(toTopLeftM, spinM)), backM);
 		morphSelection(rotateM);
 	}
-	
+
 	public void shearXSelection(double shX) {
 		int[] purePoints = calcPurePointsSelection();
 		int x1 = purePoints[0];
@@ -180,17 +180,19 @@ public class Model {
 		int y2 = purePoints[3];
 
 		// Pulls in both directions
-//		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
-//		Matrix shearX = Matrix.inverseXShearing(shX);
-//		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
-//		
-		Matrix toTopLeftM = Matrix.inverseTranslation(-x1, -y1 );
+		// Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 +
+		// (y2 - y1) / 2));
+		// Matrix shearX = Matrix.inverseXShearing(shX);
+		// Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 -
+		// y1) / 2));
+		//
+		Matrix toTopLeftM = Matrix.inverseTranslation(-x1, -y1);
 		Matrix shearX = Matrix.inverseXShearing(shX);
 		Matrix backM = Matrix.inverseTranslation(x1, y1);
 		Matrix shearM = Matrix.multiply((Matrix.multiply(toTopLeftM, shearX)), backM);
 		morphSelection(shearM);
 	}
-	
+
 	public void shearYSelection(double shY) {
 		int[] purePoints = calcPurePointsSelection();
 		int x1 = purePoints[0];
@@ -226,12 +228,12 @@ public class Model {
 				if (SwingUtilities.isRightMouseButton(e))
 					shearXSelection(-0.05);
 				else
-				shearXSelection(0.05);
+					shearXSelection(0.05);
 			} else if (action == SHEARY) {
 				if (SwingUtilities.isRightMouseButton(e))
 					shearYSelection(-0.05);
 				else
-				shearYSelection(0.05);
+					shearYSelection(0.05);
 			} else if (action == ROTATE_LEFT) {
 				rotateSelection(0.05);
 			} else if (action == ROTATE_RIGHT) {
@@ -271,8 +273,6 @@ public class Model {
 	}
 
 	public void morph(Matrix m, MyImage myImg) {
-		// System.out.println(m.toString());
-		// System.out.println(myImg.getMatrix().toString());
 
 		m = Matrix.multiply(myImg.getMatrix(), m);
 		myImg.setMatrix(m);
@@ -281,9 +281,7 @@ public class Model {
 			for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
 				ThreeDimVector vXY = new ThreeDimVector(x, y);
 				ThreeDimVector vSrc = Matrix.multiplyWithVector(m, vXY);
-				// System.out.println(vSrc.toString());
 				int posInOriginal = vSrc.getY() * MyImage.IMG_WIDTH + vSrc.getX();
-				// System.out.println("X: " + vSrc.getX() + "\t Y: " + vSrc.getY());
 				if (0 <= vSrc.getY() && vSrc.getY() < MyImage.IMG_HEIGHT && 0 <= vSrc.getX()
 						&& vSrc.getX() < MyImage.IMG_WIDTH) {
 					myImg.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = myImg.getOriginalPix()[posInOriginal];
@@ -314,9 +312,9 @@ public class Model {
 			for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
 				ThreeDimVector vXY = new ThreeDimVector(x, y);
 				ThreeDimVector vSrc = Matrix.multiplyWithVector(m, vXY);
-				// System.out.println(vSrc.toString());
+
 				int posInOriginal = vSrc.getY() * MyImage.IMG_WIDTH + vSrc.getX();
-				// System.out.println("X: " + vSrc.getX() + "\t Y: " + vSrc.getY());
+
 				if (vSrc.getX() >= x1 - m_bT && vSrc.getX() <= x2 + m_bT && vSrc.getY() >= y1 - m_bT
 						&& vSrc.getY() <= y2 + m_bT) {
 					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = m_WorkingLayerMyImage
@@ -324,8 +322,6 @@ public class Model {
 
 				} else {
 					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0;
-					// m_VecAllMyImages.get(0)
-					// .getOriginalPix()[y * MyImage.IMG_WIDTH + x];
 				}
 			}
 		}
@@ -355,8 +351,6 @@ public class Model {
 							|| (x >= x1 - m_bT && x < x2 + m_bT && y <= y2 + m_bT && y > y2)) {
 						m_WorkingLayerMyImage.getOriginalPix()[y * MyImage.IMG_WIDTH + x] = 0xff882288;
 					} else {
-						// m_WorkingLayerMyImage.getOriginalPix()[y*MyImage.IMG_WIDTH + x] =
-						// m_WorkingLayerMyImage.getCurrentPix()[y*MyImage.IMG_WIDTH + x];
 						m_WorkingLayerMyImage.getOriginalPix()[y * MyImage.IMG_WIDTH + x] = 0;
 
 					}
@@ -402,7 +396,7 @@ public class Model {
 	}
 
 	private int generateRandomInt(int min, int max) {
-		return ThreadLocalRandom.current().nextInt(min, max + 1);
+		return (int) (Math.random() * (max - min) + min);
 	}
 
 	private double generateRandomDouble(double min, double max) {
@@ -439,7 +433,7 @@ public class Model {
 		for (int i = 0; i < image.getCurrentPix().length; i++) {
 			if (m_WorkingLayerMyImage.getCurrentPix()[i] != 0) {
 				image.getCurrentPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
-				//image.getOriginalPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
+				// image.getOriginalPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
 			}
 		}
 		image.CurrentToOriginal();
@@ -498,6 +492,11 @@ public class Model {
 			System.out.println(m_EndPoint);
 		}
 		m_WorkingLayerMyImage.newPixels();
+	}
+	public void generateRandomColors(){
+		m_Color1 = generateRandomInt(0x8fffffff, 0x7fffffff);
+		m_Color2 = generateRandomInt(0x8fffffff, 0x7fffffff);
+		
 	}
 
 	public void drawCircle() {
@@ -588,18 +587,17 @@ public class Model {
 	}
 
 	public int calcColor(int x, int y) {
+		int percent;
 		if (Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
 			double w = m_currentCircleRadius * 2;
-			int percent = (int) (((x - m_StartPoint.x + m_currentCircleRadius) / w) * 100);
-
-			return compPix(m_Color1, m_Color2, percent);
+			percent = (int) (((x - m_StartPoint.x + m_currentCircleRadius) / w) * 100);
 		} else if (Mode.currentMode == Mode.LINE) {
 			double w = Math.abs(m_StartPoint.x - m_EndPoint.x);
-			int percent = (int) ((Math.abs(x - m_StartPoint.x) / w) * 100);
-			return compPix(m_Color1, m_Color2, percent);
+			percent = (int) ((Math.abs(x - m_StartPoint.x) / w) * 100);
 		} else {
 			return 0xffffffff;
 		}
+		return compPix(m_Color1, m_Color2, percent);
 
 	}
 

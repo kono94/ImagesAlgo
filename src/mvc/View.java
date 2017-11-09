@@ -132,9 +132,13 @@ public class View extends JFrame {
 						if (Mode.currentMode == Mode.SELECT) {
 							m_Model.drawSelection();
 						} else if (Mode.currentMode == Mode.LINE) {
+							m_Model.generateRandomColors();
 							m_Model.drawLine();
 						}else if(Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
 							m_Model.drawCircle();
+							m_Model.generateRandomColors();
+							m_UtilityBar.getColor1Button().setBackground(new Color(m_Model.getColor1()));
+							m_UtilityBar.getColor2Button().setBackground(new Color(m_Model.getColor2()));
 						}
 
 					}
