@@ -4,6 +4,8 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.util.Vector;
@@ -169,25 +171,8 @@ public class Controller {
 			}
 		});
 		
-		m_View.getMyMenuBar().getMIrotateSel().addActionListener(e->{
-			if(m_Model.getStartPoint().x != -1) {
-				if(!m_Model.isMergeReady()) {
-					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
-				}
-				m_Model.rotateSelection(0.20);			
-			}else
-				System.out.println("keine auswahl");
-				
-		});
-		
-		m_View.getMyMenuBar().getMItransSel().addActionListener(e->{
-			if(m_Model.getStartPoint().x != -1) {
-				if(!m_Model.isMergeReady()) {
-					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
-				}
-				//m_Model.translateSelection(50, 50);			
-			}else
-				System.out.println("keine auswahl");
+		m_View.getMyMenuBar().getMIputIn().addActionListener(e->{
+			m_Model.mergeWorkingLayer(m_View.getCenterImageComponent().getMyImage());	
 		});
 	}
 
@@ -274,6 +259,13 @@ public class Controller {
 		});
 	}
 
+	
+//	public void applyUtilityListeners() {
+//		m_View.getUtilityBar().getMoveTop().addMouseListener(new ControlMouseAdapter(Model.MOVE_TOP));	
+//		m_View.getUtilityBar().getMoveRight().addMouseListener(new ControlMouseAdapter(Model.MOVE_RIGHT));
+//		m_View.getUtilityBar().getMoveBottom().addMouseListener(new ControlMouseAdapter(Model.MOVE_BOTTOM));		
+//		m_View.getUtilityBar().getMoveLeft().addMouseListener(new ControlMouseAdapter(Model.MOVE_LEFT));
+//	}
 	class Fader implements Runnable {
 		private Thread fadingThread;
 		private int m_endingMyImagePos;

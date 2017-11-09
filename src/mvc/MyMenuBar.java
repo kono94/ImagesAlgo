@@ -21,8 +21,7 @@ public class MyMenuBar extends JMenuBar {
 	private JMenu m_MhistoMenu;
 	private JMenuItem m_MIcreateHisto;
 	private JMenu m_MselMenu;
-	private JMenuItem m_MIrotateSel;
-	private JMenuItem m_MItransSel;
+	private JMenuItem m_MIputIn;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("sans-serif", Font.PLAIN, 18);
@@ -50,10 +49,8 @@ public class MyMenuBar extends JMenuBar {
 		m_MhistoMenu.add(m_MIcreateHisto);
 		
 		m_MselMenu = new JMenu("Selection");
-		m_MIrotateSel = new JMenuItem("rotate");
-		m_MItransSel = new JMenuItem("translate");
-		m_MselMenu.add(m_MIrotateSel);
-		m_MselMenu.add(m_MItransSel);
+		m_MIputIn = new JMenuItem("Paste In");
+		m_MselMenu.add(m_MIputIn);
 		
 		
 		this.add(m_MfileMenu);
@@ -96,10 +93,8 @@ public class MyMenuBar extends JMenuBar {
 	public JMenuItem getMIcreateHisto() {
 		return m_MIcreateHisto;
 	}
-	public JMenuItem getMIrotateSel() {
-		return m_MIrotateSel;
+	public JMenuItem getMIputIn() {
+		return m_MIputIn;
 	}
-	public JMenuItem getMItransSel() {
-		return m_MItransSel;
-	}
+	
 }

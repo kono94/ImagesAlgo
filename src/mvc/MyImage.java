@@ -117,7 +117,7 @@ public class MyImage extends JComponent {
 	public void fullReset() {
 		makeTransparent();
 		hardCopyArray(m_CurrentPix, m_OriginalPix);
-		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
+		resetHistoryMatrix();
 		m_ImgSrc.newPixels();
 	}
 	
@@ -157,6 +157,9 @@ public class MyImage extends JComponent {
 	public Matrix getMatrix() {
 		return m_Matrix;
 	}
+	public void resetHistoryMatrix() {
+		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
+	}
 	public void setCurrentPix(int[] a) {
 		//System.out.println("set");
 		hardCopyArray(m_CurrentPix, a);
@@ -168,6 +171,9 @@ public class MyImage extends JComponent {
 				m_Matrix.getData()[i][j] = m.getData()[i][j];
 			}
 		}
+	}
+	public void CurrentToOriginal() {
+		hardCopyArray(m_OriginalPix, m_CurrentPix);
 	}
 	public void newPixels() {
 		m_ImgSrc.newPixels();

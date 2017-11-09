@@ -1,12 +1,15 @@
 package mvc;
 
 import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.ThreadLocalRandom;
+
+import javax.swing.SwingUtilities;
 
 import mvc.View.CenterImageComponent;
 
@@ -22,9 +25,15 @@ public class Model {
 	private MyImage m_WorkingLayerMyImage;
 	private int m_bT = 0;
 	private MyImage m_CenterMyImg;
+	private int m_Color1;
+	private int m_Color2;
+	public static int MOVE_TOP = 1, MOVE_RIGHT = 2, MOVE_BOTTOM = 3, MOVE_LEFT = 4, SHEARX = 5, SHEARY = 6,
+			SCALE_BIGGER = 7, SCALE_SMALLER = 8, ROTATE_LEFT = 9, ROTATE_RIGHT = 10;
 
 	public Model() {
 		m_VecAllMyImages = new Vector<MyImage>(5, 0);
+		m_Color1 = 0xff000000;
+		m_Color2 = 0xffffffff;
 	}
 
 	public Vector<MyImage> getMyImageVector() {
@@ -99,21 +108,6 @@ public class Model {
 		morph(rotateM, myImg);
 	}
 
-	public void rotateSelection(double alpha) {
-		int[] purePoints = calcPurePointsSelection();
-		int x1 = purePoints[0];
-		int y1 = purePoints[1];
-		int x2 = purePoints[2];
-		int y2 = purePoints[3];
-
-		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
-		Matrix spinM = Matrix.inverseRotation(alpha);
-		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
-		Matrix rotateM = Matrix.multiply((Matrix.multiply(toTopLeftM, spinM)), backM);
-		// morphSelection(spinM);
-		morphSelection(rotateM);
-	}
-
 	public void shearX(MyImage myImg, double shX) {
 		Matrix shearM = Matrix.inverseXShearing(shX);
 		morph(shearM, myImg);
@@ -130,15 +124,150 @@ public class Model {
 	}
 
 	public void scale(MyImage myImg, double scaleX, double scaleY) {
+		Matrix toTopLeftM = Matrix.inverseTranslation(-MyImage.IMG_WIDTH / 2, -MyImage.IMG_HEIGHT / 2);
+		Matrix backM = Matrix.inverseTranslation(MyImage.IMG_WIDTH / 2, MyImage.IMG_HEIGHT / 2);
 		Matrix scaleM = Matrix.inverserScaling(scaleX, scaleY);
-		morph(scaleM, myImg);
+		Matrix all = Matrix.multiply((Matrix.multiply(toTopLeftM, scaleM)), backM);
+		morph(all, myImg);
 	}
-	public void scaleOnPoint(Point p, double factor){
+
+	public void scaleOnPoint(Point p, double factor) {
+		if (Mode.currentMode == Mode.SELECT && m_EndPoint.x != -1) {
+			if (!isMergeReady()) {
+				cutOut(m_CenterMyImg);
+			}
+		}
 		Matrix move = Matrix.inverseTranslation(-p.x, -p.y);
 		Matrix scale = Matrix.inverserScaling(factor, factor);
 		Matrix back = Matrix.inverseTranslation(p.x, p.y);
 		Matrix all = Matrix.multiply(Matrix.multiply(move, scale), back);
 		morph(all, m_CenterMyImg);
+	}
+
+	public void scaleSelection(double xF, double yF) {
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
+		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
+		Matrix scale = Matrix.inverserScaling(xF, yF);
+		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
+		Matrix all = Matrix.multiply(Matrix.multiply(toTopLeftM, scale), backM);
+		morphSelection(all);
+	}
+
+	public void rotateSelection(double alpha) {
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
+		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
+		Matrix spinM = Matrix.inverseRotation(alpha);
+		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
+		Matrix rotateM = Matrix.multiply((Matrix.multiply(toTopLeftM, spinM)), backM);
+		morphSelection(rotateM);
+	}
+	
+	public void shearXSelection(double shX) {
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
+		// Pulls in both directions
+//		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
+//		Matrix shearX = Matrix.inverseXShearing(shX);
+//		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
+//		
+		Matrix toTopLeftM = Matrix.inverseTranslation(-x1, -y1 );
+		Matrix shearX = Matrix.inverseXShearing(shX);
+		Matrix backM = Matrix.inverseTranslation(x1, y1);
+		Matrix shearM = Matrix.multiply((Matrix.multiply(toTopLeftM, shearX)), backM);
+		morphSelection(shearM);
+	}
+	
+	public void shearYSelection(double shY) {
+		int[] purePoints = calcPurePointsSelection();
+		int x1 = purePoints[0];
+		int y1 = purePoints[1];
+		int x2 = purePoints[2];
+		int y2 = purePoints[3];
+
+		Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 + (y2 - y1) / 2));
+		Matrix shearY = Matrix.inverseYShearing(shY);
+		Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 - y1) / 2));
+		Matrix shearM = Matrix.multiply((Matrix.multiply(toTopLeftM, shearY)), backM);
+		morphSelection(shearM);
+	}
+
+	public void manageIconAction(int action, MouseEvent e) {
+		if (Mode.currentMode == Mode.SELECT && m_EndPoint.x != -1) {
+			if (!isMergeReady()) {
+				cutOut(m_CenterMyImg);
+			}
+			if (action == MOVE_TOP) {
+				translateSelection(0, -50);
+			} else if (action == MOVE_RIGHT) {
+				translateSelection(20, 0);
+			} else if (action == MOVE_BOTTOM) {
+				translateSelection(0, 20);
+			} else if (action == MOVE_LEFT) {
+				translateSelection(-20, 0);
+			} else if (action == SCALE_BIGGER) {
+				scaleSelection(1.1, 1.1);
+			} else if (action == SCALE_SMALLER) {
+				scaleSelection(0.9, 0.9);
+			} else if (action == SHEARX) {
+				if (SwingUtilities.isRightMouseButton(e))
+					shearXSelection(-0.05);
+				else
+				shearXSelection(0.05);
+			} else if (action == SHEARY) {
+				if (SwingUtilities.isRightMouseButton(e))
+					shearYSelection(-0.05);
+				else
+				shearYSelection(0.05);
+			} else if (action == ROTATE_LEFT) {
+				rotateSelection(0.05);
+			} else if (action == ROTATE_RIGHT) {
+				rotateSelection(-0.05);
+			}
+		} else {
+			clearWorkingLayerAndPoints();
+			if (action == MOVE_TOP) {
+				translate(m_CenterMyImg, 0, -20);
+			} else if (action == MOVE_RIGHT) {
+				translate(m_CenterMyImg, 20, 0);
+			} else if (action == MOVE_BOTTOM) {
+				translate(m_CenterMyImg, 0, 20);
+			} else if (action == MOVE_LEFT) {
+				translate(m_CenterMyImg, -20, 0);
+			} else if (action == SCALE_BIGGER) {
+				scale(m_CenterMyImg, 1.1, 1.1);
+			} else if (action == SCALE_SMALLER) {
+				scale(m_CenterMyImg, 0.9, 0.9);
+			} else if (action == SHEARX) {
+				if (SwingUtilities.isRightMouseButton(e))
+					shearX(m_CenterMyImg, -0.05);
+				else
+					shearX(m_CenterMyImg, 0.05);
+			} else if (action == SHEARY) {
+				if (SwingUtilities.isRightMouseButton(e))
+					shearY(m_CenterMyImg, -0.05);
+				else
+					shearY(m_CenterMyImg, 0.05);
+			} else if (action == ROTATE_LEFT) {
+				rotate(m_CenterMyImg, 0.1, true);
+			} else if (action == ROTATE_RIGHT) {
+				rotate(m_CenterMyImg, -0.1, true);
+			}
+		}
+
 	}
 
 	public void morph(Matrix m, MyImage myImg) {
@@ -147,7 +276,6 @@ public class Model {
 
 		m = Matrix.multiply(myImg.getMatrix(), m);
 		myImg.setMatrix(m);
-
 
 		for (int x = 0; x < MyImage.IMG_WIDTH; ++x) {
 			for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
@@ -260,12 +388,12 @@ public class Model {
 		return generateRandomDouble(-1, 1);
 	}
 
-	public int getRandomValueForXShearing() {
-		return generateRandomInt(-100, 200);
+	public double getRandomValueForXShearing() {
+		return generateRandomDouble(-1, 1);
 	}
 
-	public int getRandomValueForYShearing() {
-		return generateRandomInt(-50, 150);
+	public double getRandomValueForYShearing() {
+		return generateRandomDouble(-1, 1);
 	}
 
 	public double getRandomValueForScaling() {
@@ -305,15 +433,18 @@ public class Model {
 		m_WorkingLayerMyImage.fullReset();
 		m_WorkingLayerMyImage.newPixels();
 	}
-	
 
 	public void mergeWorkingLayer(MyImage image) {
 		System.err.println("merge");
 		for (int i = 0; i < image.getCurrentPix().length; i++) {
-			if (m_WorkingLayerMyImage.getCurrentPix()[i] != 0)
+			if (m_WorkingLayerMyImage.getCurrentPix()[i] != 0) {
 				image.getCurrentPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
+				//image.getOriginalPix()[i] = m_WorkingLayerMyImage.getCurrentPix()[i];
+			}
 		}
+		image.CurrentToOriginal();
 		image.newPixels();
+		image.resetHistoryMatrix();
 	}
 
 	public boolean isMergeReady() {
@@ -440,7 +571,7 @@ public class Model {
 			if (Mode.currentMode == Mode.CIRCLE) {
 				setPixelInArrCircle(pix, x0, y0, x, y);
 			}
-			if(Mode.currentMode == Mode.FILLED_CIRCLE) {
+			if (Mode.currentMode == Mode.FILLED_CIRCLE) {
 				setPixelInArrFilledCircle(pix, x0, y0, x, y);
 			}
 			++y;
@@ -459,19 +590,13 @@ public class Model {
 	public int calcColor(int x, int y) {
 		if (Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
 			double w = m_currentCircleRadius * 2;
+			int percent = (int) (((x - m_StartPoint.x + m_currentCircleRadius) / w) * 100);
 
-			double percent = (x - m_StartPoint.x + m_currentCircleRadius) / w;
-			int percentInt = (int) (percent * 100);
-			int color1 = 0xff000000;
-			int color2 = 0xffffffff;
-			return compPix(color1, color2, percentInt);
+			return compPix(m_Color1, m_Color2, percent);
 		} else if (Mode.currentMode == Mode.LINE) {
 			double w = Math.abs(m_StartPoint.x - m_EndPoint.x);
-			double percent = Math.abs(x - m_StartPoint.x) / w;
-			int percentInt = (int) (percent * 100);
-			int color1 = 0xffff0000;
-			int color2 = 0xff0000ff;
-			return compPix(color1, color2, percentInt);
+			int percent = (int) ((Math.abs(x - m_StartPoint.x) / w) * 100);
+			return compPix(m_Color1, m_Color2, percent);
 		} else {
 			return 0xffffffff;
 		}
@@ -498,14 +623,14 @@ public class Model {
 	public void setPixelInArrFilledCircle(int[] pix, int x1, int y1, int x2, int y2) {
 		drawLineInArr(pix, (x1 + x2), (y1 + y2), (x1 - x2), (y1 + y2));
 		drawLineInArr(pix, (x1 + x2), (y1 - y2), (x1 - x2), (y1 - y2));
-		drawLineInArr(pix, (x1 + y2), (y1 + x2),  (x1 - y2), (y1 + x2));
+		drawLineInArr(pix, (x1 + y2), (y1 + x2), (x1 - y2), (y1 + x2));
 		drawLineInArr(pix, (x1 + y2), (y1 - x2), (x1 - y2), (y1 - x2));
 	}
 
 	public void changeMode(int i) {
 		clearWorkingLayerAndPoints();
 		Mode.currentMode = i;
-		
+
 	}
 
 	private int compColor(int x1, int x2, int p) {
@@ -530,6 +655,23 @@ public class Model {
 	public void setMergeReady(boolean b) {
 		m_readyToMerge = b;
 	}
+
+	public int getColor1() {
+		return m_Color1;
+	}
+
+	public int getColor2() {
+		return m_Color2;
+	}
+
+	public void setColor1(int c) {
+		m_Color1 = c;
+	}
+
+	public void setColor2(int c) {
+		m_Color2 = c;
+	}
+
 	static class ThreeDimVector {
 		private int[] m_Data;
 
@@ -577,7 +719,7 @@ public class Model {
 		public int getY() {
 			return m_Data[1];
 		}
-		
+
 	}
 
 	static class Matrix {
@@ -635,23 +777,23 @@ public class Model {
 		// TODO inverse ?! -shX or 1/shX ??
 		// "X-Scherung"
 		public static Matrix xShearing(double shX) {
-			double[][] tmp = { { 1, 1 / shX, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+			double[][] tmp = { { 1, shX, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
 			return new Matrix(tmp);
 		}
 
 		public static Matrix inverseXShearing(double shX) {
-			double[][] tmp = { { 1, 1 / shX, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+			double[][] tmp = { { 1, -shX, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
 			return new Matrix(tmp);
 		}
 
 		// "Y-Scherung"
 		public static Matrix yShearing(double shY) {
-			double[][] tmp = { { 1, 0, 0 }, { 1 / shY, 1, 0 }, { 0, 0, 1 } };
+			double[][] tmp = { { 1, 0, 0 }, { shY, 1, 0 }, { 0, 0, 1 } };
 			return new Matrix(tmp);
 		}
 
 		public static Matrix inverseYShearing(double shY) {
-			double[][] tmp = { { 1, 0, 0 }, { 1 / shY, 1, 0 }, { 0, 0, 1 } };
+			double[][] tmp = { { 1, 0, 0 }, { -shY, 1, 0 }, { 0, 0, 1 } };
 			return new Matrix(tmp);
 		}
 

@@ -50,7 +50,7 @@ public class View extends JFrame {
 		private CenterPopupMenu m_Popup;
 		private Image m_Img;
 		private Image m_workImg;
-		private boolean m_StartInComp;
+		private boolean m_StartInComp; 
 		private Cursor m_crosshairCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 		private Cursor m_plusCursor;
 
@@ -106,13 +106,11 @@ public class View extends JFrame {
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if(Mode.currentMode == Mode.PLUS) {
-						System.out.println("PLUS");
+					if(Mode.currentMode == Mode.PLUS) {						
 						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
 								(int) (e.getY() * getScalingFactorY())), 1.1);
 					}
 					if(Mode.currentMode == Mode.MINUS) {
-						System.out.println("PLUS");
 						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
 								(int) (e.getY() * getScalingFactorY())), 0.9);
 					}
