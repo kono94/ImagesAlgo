@@ -18,7 +18,7 @@ public class Model {
 	public Point m_StartPoint = new Point(-1, -1);
 	public Point m_EndPoint = new Point(-1, -1);
 	private int m_currentCircleRadius;
-	private boolean m_alreadyCutOut = false;
+	private boolean m_readyToMerge = false;
 	private MyImage m_WorkingLayerMyImage;
 	private int m_bT = 0;
 	private MyImage m_CenterMyImg;
@@ -133,6 +133,13 @@ public class Model {
 		Matrix scaleM = Matrix.inverserScaling(scaleX, scaleY);
 		morph(scaleM, myImg);
 	}
+	public void scaleOnPoint(Point p, double factor){
+		Matrix move = Matrix.inverseTranslation(-p.x, -p.y);
+		Matrix scale = Matrix.inverserScaling(factor, factor);
+		Matrix back = Matrix.inverseTranslation(p.x, p.y);
+		Matrix all = Matrix.multiply(Matrix.multiply(move, scale), back);
+		morph(all, m_CenterMyImg);
+	}
 
 	public void morph(Matrix m, MyImage myImg) {
 		// System.out.println(m.toString());
@@ -141,7 +148,6 @@ public class Model {
 		m = Matrix.multiply(myImg.getMatrix(), m);
 		myImg.setMatrix(m);
 
-		System.out.println(m.toString());
 
 		for (int x = 0; x < MyImage.IMG_WIDTH; ++x) {
 			for (int y = 0; y < MyImage.IMG_HEIGHT; ++y) {
@@ -200,7 +206,7 @@ public class Model {
 	}
 
 	public void cutOut(MyImage cImg) {
-		m_alreadyCutOut = true;
+		m_readyToMerge = true;
 		System.out.println("cut");
 		int[] purePoints = calcPurePointsSelection();
 		int x1 = purePoints[0];
@@ -289,15 +295,17 @@ public class Model {
 
 	public void clearWorkingLayerAndPoints() {
 		System.out.println("resetet");
-		if (m_alreadyCutOut) {
+		if (m_readyToMerge) {
 			mergeWorkingLayer(m_CenterMyImg);
 		}
+		m_readyToMerge = false;
 		m_StartPoint.x = -1;
 		m_EndPoint.x = -1;
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
 		m_WorkingLayerMyImage.fullReset();
 		m_WorkingLayerMyImage.newPixels();
 	}
+	
 
 	public void mergeWorkingLayer(MyImage image) {
 		System.err.println("merge");
@@ -308,8 +316,8 @@ public class Model {
 		image.newPixels();
 	}
 
-	public boolean isAlreadyCutOut() {
-		return m_alreadyCutOut;
+	public boolean isMergeReady() {
+		return m_readyToMerge;
 	}
 
 	public int[] calcPurePointsSelection() {
@@ -330,10 +338,7 @@ public class Model {
 		int y2 = purePoints[3];
 
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
-		// drawLineInArr(myImage.getCurrentPix(), x, y, x+w, y);
-		// drawLineInArr(myImage.getCurrentPix(), x, y, x, y+h);
-		// drawLineInArr(myImage.getCurrentPix(), x+w, y, x+w, y+h);
-		// drawLineInArr(myImage.getCurrentPix(), x, y+h, x+w, y+h);
+
 		for (int x = x1; x < x2 + 1; ++x) {
 			for (int y = y1; y < y2 + 1; ++y) {
 				if (x < x1 || y < y1 || x > x2 || y > y2)
@@ -355,6 +360,7 @@ public class Model {
 
 		try {
 			drawLineInArr(m_WorkingLayerMyImage.getCurrentPix(), x1, y1, x2, y2);
+			m_readyToMerge = true;
 
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.err.println("ERROROROROR");
@@ -364,6 +370,7 @@ public class Model {
 	}
 
 	public void drawCircle() {
+		m_readyToMerge = true;
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
 		m_currentCircleRadius = (int) Math.hypot((m_StartPoint.x - m_EndPoint.x), (m_StartPoint.y - m_EndPoint.y));
 		System.err.println(m_currentCircleRadius);
@@ -378,7 +385,7 @@ public class Model {
 	}
 
 	public void setStartPoint(Point p) {
-		m_alreadyCutOut = false;
+		m_readyToMerge = false;
 		m_StartPoint.x = p.x;
 		m_StartPoint.y = p.y;
 	}
@@ -496,8 +503,9 @@ public class Model {
 	}
 
 	public void changeMode(int i) {
-		Mode.currentMode = i;
 		clearWorkingLayerAndPoints();
+		Mode.currentMode = i;
+		
 	}
 
 	private int compColor(int x1, int x2, int p) {
@@ -519,6 +527,9 @@ public class Model {
 		m_WorkingLayerMyImage.newPixels();
 	}
 
+	public void setMergeReady(boolean b) {
+		m_readyToMerge = b;
+	}
 	static class ThreeDimVector {
 		private int[] m_Data;
 
@@ -566,6 +577,7 @@ public class Model {
 		public int getY() {
 			return m_Data[1];
 		}
+		
 	}
 
 	static class Matrix {

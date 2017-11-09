@@ -2,6 +2,8 @@ package mvc;
 
 import java.awt.Image;
 import java.awt.MediaTracker;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.util.Vector;
@@ -22,9 +24,9 @@ public class Controller {
 		m_View = new View(m_Model);
 		// proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
 		loadAllImagesFromDirectory();
+		applyKeyListeners();
 		applyMenuListeners();
 		applyPopupListeners();
-
 	}
 
 	public void proceedJFileChooserInput(Image[] imgs) {
@@ -101,6 +103,22 @@ public class Controller {
 			new Fader(m_Model.getMyImageVector().indexOf(m_View.getCenterImageComponent().getMyImage()));
 		}
 	}
+	
+	public void applyKeyListeners() {
+		System.out.println("ss");
+		m_View.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown() &&
+						Mode.currentMode != Mode.SELECT && Mode.currentMode != Mode.FADING &&
+						m_Model.isMergeReady()) {
+					m_Model.setMergeReady(false);
+					m_Model.clearWorkingLayerAndPoints();
+				}
+				
+			}
+		});
+	}
 	public void applyMenuListeners() {
 		// load in a single image
 		m_View.getMyMenuBar().getMIopen().addActionListener(e -> {
@@ -153,7 +171,7 @@ public class Controller {
 		
 		m_View.getMyMenuBar().getMIrotateSel().addActionListener(e->{
 			if(m_Model.getStartPoint().x != -1) {
-				if(!m_Model.isAlreadyCutOut()) {
+				if(!m_Model.isMergeReady()) {
 					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
 				}
 				m_Model.rotateSelection(0.20);			
@@ -164,7 +182,7 @@ public class Controller {
 		
 		m_View.getMyMenuBar().getMItransSel().addActionListener(e->{
 			if(m_Model.getStartPoint().x != -1) {
-				if(!m_Model.isAlreadyCutOut()) {
+				if(!m_Model.isMergeReady()) {
 					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
 				}
 				//m_Model.translateSelection(50, 50);			
@@ -175,7 +193,7 @@ public class Controller {
 
 	public void applyPopupListeners() {
 		m_View.getCenterImageComponent().getPopup().getMICutOut().addActionListener(e->{
-			if(!m_Model.isAlreadyCutOut())
+			if(!m_Model.isMergeReady())
 			m_Model.cutOut();
 			else {
 				new InfoDialog(m_View, "Info", false, "Hat keinen Effekt", true);
@@ -189,7 +207,7 @@ public class Controller {
 				System.out.println("KEINE AUSWAHL");
 				m_Model.translate(m_View.getCenterImageComponent().getMyImage(), random[0], random[1]);
 			}else {
-				if(!m_Model.isAlreadyCutOut()) {
+				if(!m_Model.isMergeReady()) {
 					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
 				}
 				m_Model.translateSelection(random[0], random[1]);		

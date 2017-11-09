@@ -25,9 +25,11 @@ public class UtilityBar extends JComponent {
 	private Icon m_linie;
 	private Icon m_kreis;
 	private Icon m_filledCircle;
-	private Icon[] m_allIcons = new Icon[4];
+	private Icon[] m_allIcons = new Icon[6];
 	private Model m_Model;
 	private View m_View;
+	private Icon m_plus;
+	private Icon m_minus;
 	
 	public UtilityBar(View view, Model m) {
 		m_Model = m;
@@ -42,6 +44,10 @@ public class UtilityBar extends JComponent {
 			m_allIcons[Mode.CIRCLE] = m_kreis; 
 			add(m_filledCircle);
 			m_allIcons[Mode.FILLED_CIRCLE] = m_filledCircle;
+			add(m_plus);
+			m_allIcons[Mode.PLUS] = m_plus;
+			add(m_minus);
+			m_allIcons[Mode.MINUS] = m_minus;
 			
 			for (int i = 0; i < m_allIcons.length; i++) {
 				if(Mode.currentMode == i) {
@@ -62,6 +68,8 @@ public class UtilityBar extends JComponent {
 			m_linie = new Icon(ImageIO.read(new File("icons/line.png")), ImageIO.read(new File("icons/line_active.png")), Mode.LINE);
 			m_kreis = new Icon(ImageIO.read(new File("icons/kreis.png")), ImageIO.read(new File("icons/kreis_active.png")), Mode.CIRCLE);
 			m_filledCircle = new Icon(ImageIO.read(new File("icons/filledCircle.png")), ImageIO.read(new File("icons/filledCircle_active.png")), Mode.FILLED_CIRCLE);
+			m_plus = new Icon(ImageIO.read(new File("icons/plus.png")), ImageIO.read(new File("icons/plus_active.png")), Mode.PLUS);
+			m_minus = new Icon(ImageIO.read(new File("icons/minus.png")), ImageIO.read(new File("icons/minus_active.png")), Mode.MINUS);
 
 			return true;
 		} catch (IOException e) {
