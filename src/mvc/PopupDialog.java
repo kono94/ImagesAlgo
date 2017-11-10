@@ -100,7 +100,7 @@ public class PopupDialog extends JDialog {
 					}					
 					dispose();
 				} catch (Exception ex) {
-					errorLabel.setText("Falsche Eingabe");
+					errorLabel.setText("Wrong input");
 					pack();
 				}
 			});
@@ -131,7 +131,7 @@ public class PopupDialog extends JDialog {
 					}
 					dispose();
 				} catch (Exception ex) {
-					errorLabel.setText("Falsche Eingabe");
+					errorLabel.setText("Wrong input");
 					pack();
 				}
 			});
@@ -144,7 +144,7 @@ public class PopupDialog extends JDialog {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
 		buttonPanel.setLayout(new FlowLayout());
-		JButton quitButton = new JButton("ABBRECHEN");
+		JButton quitButton = new JButton("CANCEL");
 		quitButton.addActionListener(e -> {
 			m_quit = true;
 			dispose();

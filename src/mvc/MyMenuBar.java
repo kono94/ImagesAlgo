@@ -28,6 +28,8 @@ public class MyMenuBar extends JMenuBar {
 	private JMenuItem m_MIleftToRight;
 	private JMenuItem m_MIMidToOut;
 	private JMenuItem m_MIpicFromHisto;
+	private JMenuItem m_MI3D;
+	private JMenuItem m_MI3Dback;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("Comic Sans MS", Font.PLAIN, 18);
@@ -35,15 +37,15 @@ public class MyMenuBar extends JMenuBar {
 		UIManager.put("Menu.font", f);
 		UIManager.put("MenuItem.font" , f);
 		m_MfileMenu = new JMenu("Files");
-		m_MIopen = new JMenuItem("open");
-		m_MIloadAllImagesItem = new JMenuItem("load all images in current directory");
+		m_MIopen = new JMenuItem("Open");
+		m_MIloadAllImagesItem = new JMenuItem("Load all pictures from working directory");
 		m_MfileMenu.add(m_MIopen);
 		m_MfileMenu.add(m_MIloadAllImagesItem);
 		m_MfadingMenu = new JMenu("Fading");
-		m_MIslow = new JMenuItem("slow - 100ms 3%");
-		m_MImedium = new JMenuItem("medium - 50ms 3%");
-		m_MIveryFast = new JMenuItem("maximaler Speed - 0ms 3%");
-		m_MIfadeSwitcher = new JMenuItem("start fading");
+		m_MIslow = new JMenuItem("Slow - 100ms 3%");
+		m_MImedium = new JMenuItem("Medium - 50ms 3%");
+		m_MIveryFast = new JMenuItem("Max speed - 0ms 3%");
+		m_MIfadeSwitcher = new JMenuItem("START fading");
 
 		m_MfadingMenu.add(m_MIfadeSwitcher);
 		m_MfadingMenu.addSeparator();
@@ -51,22 +53,27 @@ public class MyMenuBar extends JMenuBar {
 		m_MfadingMenu.add(m_MImedium);
 		m_MfadingMenu.add(m_MIveryFast);
 		
-		m_MhistoMenu = new JMenu("Histogramm");
-		m_MIcreateHisto = new JMenuItem("Erstelle Datei mit Historgramm");
-		m_MIpicFromHisto = new JMenuItem("erstelle bild aus histogramm");
-		m_MhistoMenu.add(m_MIpicFromHisto);
+		m_MhistoMenu = new JMenu("Histogram");
+		m_MIcreateHisto = new JMenuItem("Create file with histogram");
+		m_MIpicFromHisto = new JMenuItem("Convert histogram to image");
 		m_MhistoMenu.add(m_MIcreateHisto);
+		m_MhistoMenu.add(m_MIpicFromHisto);
+		
 		
 		m_MselMenu = new JMenu("Selection");
-		m_MIputIn = new JMenuItem("Paste In");
+		m_MIputIn = new JMenuItem("Cut");
 		m_MselMenu.add(m_MIputIn);
 		
 		m_MsettingsMenu = new JMenu("Settings");
-		m_MIrandomColor = new JMenuItem("start using random colors");
-		m_MGradientMenu = new JMenu("Farbverlauf");
-		m_MIleftToRight = new JMenuItem("von links nach rechts");
-		m_MIMidToOut	= new JMenuItem("mitte nach außen");
+		m_MIrandomColor = new JMenuItem("START using random colors");
+		m_MGradientMenu = new JMenu("Color gradient");
+		m_MIleftToRight = new JMenuItem("Left -> Right");
+		m_MIMidToOut	= new JMenuItem("Center -> Outside");
+		m_MI3D = new JMenuItem("Enable '3D' Mode");
+		m_MI3Dback = new JMenuItem("Disable '3D' Mode");
 		m_MsettingsMenu.add(m_MIrandomColor);
+		m_MsettingsMenu.add(m_MI3D);
+		m_MsettingsMenu.add(m_MI3D);
 		
 		m_MGradientMenu.add(m_MIMidToOut);
 		m_MGradientMenu.add(m_MIleftToRight);		
@@ -128,5 +135,11 @@ public class MyMenuBar extends JMenuBar {
 	}
 	public JMenuItem getMIpicFromHisto() {
 		return m_MIpicFromHisto;
+	}
+	public JMenuItem getMI3D() {
+		return m_MI3D;
+	}
+	public JMenuItem getMI3Dback() {
+		return m_MI3Dback;
 	}
 }

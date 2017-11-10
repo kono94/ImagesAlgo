@@ -28,7 +28,7 @@ public class UtilityBar extends JComponent {
 	private Icon m_linie;
 	private Icon m_kreis;
 	private Icon m_filledCircle;
-	private Icon[] m_allIcons = new Icon[4]; // Those who change Mode
+	private Icon[] m_allIcons = new Icon[6]; // Those who change Mode
 	private Model m_Model;
 	private View m_View;
 	private Icon m_moveTop;
@@ -41,8 +41,10 @@ public class UtilityBar extends JComponent {
 	private Icon m_scaleBigger;
 	private Icon m_shearX;
 	private Icon m_shearY;
+	private Icon m_rotateOnPoint;
 	private JButton m_color1Button;
 	private JButton m_color2Button;
+	private Icon m_zoomOnPoint;
 
 	public UtilityBar(View view, Model m) {
 		m_Model = m;
@@ -54,7 +56,7 @@ public class UtilityBar extends JComponent {
 		m_color1Button.setPreferredSize(new Dimension(18, 18));
 		m_color1Button.setBackground(new Color(m_Model.getColor1()));
 		m_color1Button.addActionListener(e -> {
-			Color newColor = JColorChooser.showDialog(m_View, "Choose Right Color", new Color(m_Model.getColor1()));
+			Color newColor = JColorChooser.showDialog(m_View, "Choose Left Color", new Color(m_Model.getColor1()));
 			if (newColor != null) {
 				m_Model.setColor1(newColor.getRGB());
 				m_color1Button.setBackground(newColor);
@@ -85,6 +87,10 @@ public class UtilityBar extends JComponent {
 			m_allIcons[Mode.CIRCLE] = m_kreis;
 			add(m_filledCircle);
 			m_allIcons[Mode.FILLED_CIRCLE] = m_filledCircle;
+			add(m_rotateOnPoint);
+			m_allIcons[Mode.ROTATE_POINT] = m_rotateOnPoint;
+			add(m_zoomOnPoint);
+			m_allIcons[Mode.ZOOM] = m_zoomOnPoint;
 			add(m_moveTop);
 			add(m_moveRight);
 			add(m_moveBottom);
@@ -105,7 +111,7 @@ public class UtilityBar extends JComponent {
 				}
 			}
 		} else {
-			new InfoDialog((JFrame) view, "Error", true, "Konnte die Icons nicht einladen", false);
+			new InfoDialog((JFrame) view, "Error", true, "Could not load Icons, which are VERY important to the program", false);
 		}
 	}
 
@@ -162,13 +168,17 @@ public class UtilityBar extends JComponent {
 			m_scaleSmaller = new Icon(ImageIO.read(new File("icons/scaleSmaller.png")),
 					ImageIO.read(new File("icons/scaleSmallerPressed.png")), Model.SCALE_SMALLER);
 			m_rotateLeft = new Icon(ImageIO.read(new File("icons/rotateLeft.png")),
-					ImageIO.read(new File("icons/rotateLeftPressed.png")), Model.ROTATE_LEFT);
+					ImageIO.read(new File("icons/rotateLeftPressed.png")), Model.ROTATE_RIGHT);
 			m_rotateRight = new Icon(ImageIO.read(new File("icons/rotateRight.png")),
-					ImageIO.read(new File("icons/rotateRightPressed.png")), Model.ROTATE_RIGHT);
+					ImageIO.read(new File("icons/rotateRightPressed.png")), Model.ROTATE_LEFT);
 			m_shearX = new Icon(ImageIO.read(new File("icons/shearX.png")),
 					ImageIO.read(new File("icons/shearXPressed.png")), Model.SHEARX);
 			m_shearY = new Icon(ImageIO.read(new File("icons/shearY.png")),
 					ImageIO.read(new File("icons/shearYPressed.png")), Model.SHEARY);
+			m_rotateOnPoint = new Icon(ImageIO.read(new File("icons/rotatePoint.png")),
+					ImageIO.read(new File("icons/rotatePoint_active.png")), Mode.ROTATE_POINT);
+			m_zoomOnPoint =  new Icon(ImageIO.read(new File("icons/zoomButton.png")),
+					ImageIO.read(new File("icons/zoomButton_active.png")), Mode.ZOOM);
 			return true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -200,7 +210,7 @@ public class UtilityBar extends JComponent {
 
 			addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(MouseEvent e) {
+				public void mousePressed(MouseEvent e) {
 					if (Mode.currentMode != m_representedMode)
 						activate();
 				}
@@ -300,7 +310,6 @@ public class UtilityBar extends JComponent {
 			public PressedThread(MouseEvent e) {
 				Thread t = new Thread(this);
 				t.start();
-				System.out.println("new");
 				m_e = e;
 			}
 

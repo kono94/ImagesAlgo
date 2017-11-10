@@ -18,7 +18,6 @@ import javax.swing.SwingUtilities;
 import mvc.Model.Matrix;
 import mvc.View.CenterImageComponent;
 
-//TODO speration of logic and view?
 @SuppressWarnings("serial")
 public class MyImage extends JComponent {	
 	// preferred size of the small images in the scrollpane
@@ -41,14 +40,14 @@ public class MyImage extends JComponent {
 	private boolean m_selected;
 	private int borderWidth = 4;
 	private Point centerPoint;
-	public void changeCenterPoint(Point verschiebung) {
-		centerPoint.x += verschiebung.x;
-		centerPoint.y += verschiebung.y;
+	public void changeCenterPoint(int x, int y) {
+		centerPoint.x += x;
+		centerPoint.y += y;
 	}
-	public Point getCenterPoint() {
-		return centerPoint;		
+	public void setCenterPoint(int x, int y) {
+		centerPoint.x = x;
+		centerPoint.y = y;
 	}
-	
 	public MyImage(Image img, CenterImageComponent centerImageComponent) { 
 		centerPoint = new Point(IMG_WIDTH /2, IMG_HEIGHT/2);
 		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
@@ -92,6 +91,7 @@ public class MyImage extends JComponent {
 	} // end constructor
 	
 	public MyImage(CenterImageComponent center) {
+		centerPoint = new Point(IMG_WIDTH /2, IMG_HEIGHT/2);
 		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
 		m_ImgSrc = new MemoryImageSource(IMG_WIDTH, IMG_HEIGHT, m_CurrentPix, 0, IMG_WIDTH);
 		m_ImgSrc.setAnimated(true);
@@ -110,7 +110,6 @@ public class MyImage extends JComponent {
 	
 	
 	public void random(){
-		System.err.println(Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4"))));
 		for (int i = 0; i < m_CurrentPix.length-1; i++) {			
 			m_CurrentPix[i] >>= Integer.parseInt(String.valueOf(Integer.parseInt("58".substring(1)) / Integer.parseInt("4")));
 		}
@@ -152,11 +151,20 @@ public class MyImage extends JComponent {
 				getHeight() - borderWidth * 2, this);
 	}
 	
-	public Image getImage() {
-		return m_Img;
+	public void CurrentToOriginal() {
+		hardCopyArray(m_OriginalPix, m_CurrentPix);
+	}
+	public void newPixels() {
+		m_ImgSrc.newPixels();
 	}
 	public boolean isSelected() {
 		return m_selected;
+	}
+	public Point getCenterPoint() {
+		return centerPoint;		
+	}
+	public Image getImage() {
+		return m_Img;
 	}
 	public int[] getCurrentPix() {
 		return m_CurrentPix;
@@ -171,7 +179,6 @@ public class MyImage extends JComponent {
 		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
 	}
 	public void setCurrentPix(int[] a) {
-		//System.out.println("set");
 		hardCopyArray(m_CurrentPix, a);
 		m_ImgSrc.newPixels();
 	}
@@ -181,11 +188,5 @@ public class MyImage extends JComponent {
 				m_Matrix.getData()[i][j] = m.getData()[i][j];
 			}
 		}
-	}
-	public void CurrentToOriginal() {
-		hardCopyArray(m_OriginalPix, m_CurrentPix);
-	}
-	public void newPixels() {
-		m_ImgSrc.newPixels();
 	}
 } // end SmallImage class

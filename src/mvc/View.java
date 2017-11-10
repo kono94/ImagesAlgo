@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -17,8 +19,6 @@ public class View extends JFrame {
 	private Model m_Model;
 	private CenterImageComponent m_CenterImageComponent;
 
-	// how much percent of the center does the big image fill
-	private int bigImagePercent = 90;
 
 	private MyMenuBar m_MyMenuBar;
 	private ImageBarPanel m_ImageBar;
@@ -54,17 +54,24 @@ public class View extends JFrame {
 		private boolean m_StartInComp;
 		private Cursor m_crosshairCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 		private Cursor m_plusCursor;
+		private Cursor m_rotateCursor;
+		private Cursor m_lineCursor;
+		private Cursor m_zoomCursor;
+		private volatile boolean m_isHoldDown;
 
 		public CenterImageComponent() {
 			try {
 				m_plusCursor = getToolkit().createCustomCursor(ImageIO.read(new File("icons/plusCursor.png")),
 						new Point(10, 10), "woo");
+				m_rotateCursor = getToolkit().createCustomCursor(ImageIO.read(new File("icons/rotatePointCursor.png")), new Point(10, 10), "rotateCursor");
+				m_lineCursor = getToolkit().createCustomCursor(ImageIO.read(new File("icons/lineCursor.png")), new Point(1, 1), "lineCursor");
+				m_zoomCursor = getToolkit().createCustomCursor(ImageIO.read(new File("icons/zoomCursor.png")), new Point(5, 5), "zoomCursor");
 			} catch (HeadlessException | IndexOutOfBoundsException | IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			//create Dummy (so morphs dont through nullPointer)
-			m_MyImage = new MyImage(this);
+//			m_MyImage = new MyImage(this);
 			m_Model.setCenterMyImage(m_MyImage);
 			m_Model.createWorkingImage(this);
 			m_workImg = m_Model.getWorkingMyImage().getImage();
@@ -74,13 +81,15 @@ public class View extends JFrame {
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			setPreferredSize(new Dimension(1280, 720));
 			addMouseListener(m_Popup.new PopupMouseListener());
+			
+		
 			addMouseWheelListener(e->{
 				if(e.getWheelRotation() < 0) {
 						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
-								(int) (e.getY() * getScalingFactorY())), 0.97);
+								(int) (e.getY() * getScalingFactorY())), 1.03);
 				}else {
 						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
-								(int) (e.getY() * getScalingFactorY())), 1.03);
+								(int) (e.getY() * getScalingFactorY())), 0.97);
 					
 				}
 			});
@@ -102,16 +111,35 @@ public class View extends JFrame {
 					}
 
 				}
-
-				@Override
-				public void mouseMoved(MouseEvent e) {
-//					if (Mode.currentMode == Mode.PLUS)
-//						setCursor(m_plusCursor);
-				}
+				
+			
+			
 			});
 			addMouseListener(new MouseAdapter() {
 				@Override
+				public void mouseEntered(MouseEvent e) {
+					if(Mode.currentMode == Mode.ROTATE_POINT)
+						setCursor(m_rotateCursor);
+					else if(Mode.currentMode == Mode.LINE)
+						setCursor(m_lineCursor);
+					else if(Mode.currentMode == Mode.CIRCLE)
+						setCursor(m_lineCursor);
+					else if(Mode.currentMode == Mode.ZOOM)
+						setCursor(m_zoomCursor);
+					else if(Mode.currentMode == Mode.FILLED_CIRCLE)
+						setCursor(m_lineCursor);
+				}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				}
+				@Override
 				public void mousePressed(MouseEvent e) {
+					if(Mode.currentMode == Mode.ROTATE_POINT || Mode.currentMode == Mode.ZOOM) {				
+						m_isHoldDown = true;
+						new PressedThread(e);
+					}
+				
 					if (SwingUtilities.isLeftMouseButton(e) && Mode.currentMode != Mode.FADING) {
 						m_Model.clearWorkingLayerAndPoints();
 						m_Model.setStartPoint(new Point((int) (e.getX() * getScalingFactorX()),
@@ -122,18 +150,21 @@ public class View extends JFrame {
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
+					if(Mode.currentMode == Mode.ROTATE_POINT) {				
+						m_Model.rotateOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
+								(int) (e.getY() * getScalingFactorY())), 10);
+					}
 					if (e.isPopupTrigger()) {
 
 					} else {
 						if (Mode.currentMode != Mode.FADING && m_Model.m_StartPoint.x != -1)
 							m_Model.clearWorkingLayerAndPoints();
-
-						System.out.println("left");
 					}
 				}
 
 				@Override
 				public void mouseReleased(MouseEvent e) {
+					m_isHoldDown = false;
 					if (SwingUtilities.isLeftMouseButton(e)) {
 						m_Model.setEndPoint(manageEndP(e));
 
@@ -141,7 +172,6 @@ public class View extends JFrame {
 							m_Model.drawSelection();
 							//m_Model.cutOut();
 						} else if (Mode.currentMode == Mode.LINE) {
-							m_Model.generateRandomColors();
 							m_Model.drawLine();
 						} else if (Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
 							m_Model.drawCircle();
@@ -156,24 +186,55 @@ public class View extends JFrame {
 					}
 					m_StartInComp = false;
 				}
+				
+				
+				
+				class PressedThread implements Runnable {
+					MouseEvent m_e;
+
+					public PressedThread(MouseEvent e) {
+						Thread t = new Thread(this);
+						t.start();
+						m_e = e;
+					}
+
+					@Override
+					public void run() {
+						while (m_isHoldDown) {
+							if(Mode.currentMode == Mode.ROTATE_POINT) {	
+								int rotateDegree = -10;
+								if(SwingUtilities.isRightMouseButton(m_e))
+									rotateDegree = 10;
+								m_Model.rotateOnPoint(new Point((int) (m_e.getX() * getScalingFactorX()),
+										(int) (m_e.getY() * getScalingFactorY())), rotateDegree);
+							}
+							if(Mode.currentMode == Mode.ZOOM) {	
+								double scaleFactor = 1.02;
+								if(SwingUtilities.isRightMouseButton(m_e))
+									scaleFactor = 0.98;
+								m_Model.scaleOnPoint(new Point((int) (m_e.getX() * getScalingFactorX()),
+										(int) (m_e.getY() * getScalingFactorY())), scaleFactor);
+							}
+						}
+
+					}
+				}
 
 			});
 			
 		}
-
+		
+	
 		@Override
 		public void paintComponent(Graphics g) {
 			if (m_Img != null) {
-				// scales the image to fill "bigImagePercent" percent of the
-				// CENTER
-				// int x = getWidth() / 2 - getWidth() / 2 * bigImagePercent / 100;
-				// int y = getHeight() / 2 - getHeight() / 2 * bigImagePercent / 100;
+				
 				int x = 0;
 				int y = 0;
 				int w = getWidth();
 				int h = getHeight();
 
-				// draw the image
+				// draw the images
 				g.drawImage(m_Img, x, y, w, h, this);
 				g.drawImage(m_workImg, x, y, w, h, this);
 			}

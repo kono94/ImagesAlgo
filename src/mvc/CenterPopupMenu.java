@@ -26,7 +26,7 @@ public class CenterPopupMenu extends JPopupMenu {
 		setBorder(new EmptyBorder(5, 20, 5, 0));
 		m_SelectionLabel = new JLabel("MORPH SELECTION", SwingConstants.CENTER);
 		m_SelectionLabel.setBorder(new EmptyBorder(5, 0, 5, 5));
-		m_CutOut = new JMenuItem(" CutOut ");
+		m_CutOut = new JMenuItem(" Cut ");
 		m_TranslateRandom = new JMenuItem(" Translate Random ");
 		m_TranslateValue = new JMenuItem(" Translate Custom ");
 		m_ShearingXRandom = new JMenuItem(" Shearing X Random ");
@@ -67,16 +67,29 @@ public class CenterPopupMenu extends JPopupMenu {
 //				
 //		}
 
+//		public void mouseClicked(MouseEvent e) {
+//			System.out.println("clicked");
+//			System.out.println(e.isPopupTrigger());
+//			
+//			if (e.getButton() == MouseEvent.BUTTON2 && Mode.currentMode != Mode.FADING) {
+//				if(Mode.currentMode == Mode.SELECT) {
+//					m_SelectionLabel.setVisible(true);
+//				}else {
+//					m_SelectionLabel.setVisible(false);
+//				}
+//				doPop(e);
+//			}
+//				
+//		}
 		public void mouseReleased(MouseEvent e) {
-			if (e.isPopupTrigger() && Mode.currentMode != Mode.FADING) {
-				if(Mode.currentMode == Mode.SELECT) {
-					m_SelectionLabel.setVisible(true);
-				}else {
-					m_SelectionLabel.setVisible(false);
-				}
-				doPop(e);
-			}
+			if (e.isPopupTrigger() && Mode.currentMode == Mode.SELECT) {
 				
+					m_SelectionLabel.setVisible(true);
+				
+					//m_SelectionLabel.setVisible(false);
+				
+				doPop(e);
+			}				
 		}
 
 		private void doPop(MouseEvent e) {

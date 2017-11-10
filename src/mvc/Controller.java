@@ -25,6 +25,18 @@ public class Controller {
 	public Controller() {
 		m_Model = new Model();
 		m_View = new View(m_Model);
+		
+		MyImage tmp = new MyImage(m_View.createImage(MyImage.IMG_WIDTH, MyImage.IMG_HEIGHT),m_View.getCenterImageComponent());
+		for (int j = 0; j < tmp.getCurrentPix().length; j++) {
+			tmp.getCurrentPix()[j] = 0xffffffff;
+		}
+		tmp.CurrentToOriginal();
+		tmp.newPixels();		
+		m_View.getImageBarPanel().add(tmp);
+		m_Model.addImage(tmp);
+		setStartingImage();
+		m_View.getImageBarPanel().revalidate();
+		
 		// proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
 		//loadAllImagesFromDirectory();
 		applyKeyListeners();
@@ -52,7 +64,7 @@ public class Controller {
 					// . means current working directory
 					File directory = new File("./pictures");
 					File[] f = directory.listFiles();
-					LoadingDialog loadingDialog = new LoadingDialog(m_View, "Loading Images", "Lädt neue Bilder ein", f.length);
+					LoadingDialog loadingDialog = new LoadingDialog(m_View, "Loading Images", "Loading Images...", f.length);
 
 					for (File file : f) {
 						// if file ends with .jpg or .gif
@@ -93,7 +105,7 @@ public class Controller {
 		m_View.getUtilityBar().getIconByModus(Mode.SELECT).activate();
 
 		m_Model.changeMode(Mode.SELECT);
-		m_View.getMyMenuBar().getMIfadingSwitcher().setText("start fading");		
+		m_View.getMyMenuBar().getMIfadingSwitcher().setText("START fading");		
 	}
 	public void startFading() {
 		m_Model.changeMode(Mode.FADING);
@@ -106,17 +118,12 @@ public class Controller {
 	}
 	
 	public void applyKeyListeners() {
-		System.out.println("ss");
 		m_View.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown() &&
-						Mode.currentMode != Mode.SELECT && Mode.currentMode != Mode.FADING &&
-						m_Model.isMergeReady()) {
-					m_Model.setMergeReady(false);
-					m_Model.clearWorkingLayerAndPoints();
-				}
-				
+				System.out.println("dd");
+			if(e.getKeyCode() > KeyEvent.VK_0)
+				System.out.println("dd");
 			}
 		});
 	}
@@ -157,14 +164,14 @@ public class Controller {
 
 		m_View.getMyMenuBar().getMIcreateHisto().addActionListener(e -> {
 			if (m_View.getCenterImageComponent().getMyImage() == null) {
-				new InfoDialog(m_View, "Histogramm", "Kein Bild ausgewählt");
+				new InfoDialog(m_View, "Histogramm", "No picture selected!");
 
 			} else {
 				if (m_Model.createHistogramm(m_View.getCenterImageComponent().getMyImage())) {
 					new InfoDialog(m_View, "Histogramm",
-							"Histogramm wurde erfolgreich in die Datei Histogramm.txt geschrieben");
+							"Histogram successfully written into 'Histogramm.txt' file");
 				} else {
-					new InfoDialog(m_View, "Histogramm", "Es gab einen Fehler beim Erstellen des Histogramms!");
+					new InfoDialog(m_View, "Histogramm", "There was an error creating your histogram!");
 
 				}
 			}
@@ -181,13 +188,13 @@ public class Controller {
 		m_View.getMyMenuBar().getMIrandomColor().addActionListener(e->{
 			if(m_Model.isUsingRandomColors()) {
 				m_Model.useRandomColors(false);
-				m_View.getMyMenuBar().getMIrandomColor().setText("start using random colors");
+				m_View.getMyMenuBar().getMIrandomColor().setText("START using random colors");
 			}else {
 				m_Model.useRandomColors(true);
 				m_Model.generateRandomColors();
 				m_View.getUtilityBar().getColor1Button().setBackground(new Color(m_Model.getColor1()));
 				m_View.getUtilityBar().getColor2Button().setBackground(new Color(m_Model.getColor2()));
-				m_View.getMyMenuBar().getMIrandomColor().setText("stop using random colors");
+				m_View.getMyMenuBar().getMIrandomColor().setText("STOP using random colors");
 			}
 			
 		});
@@ -198,6 +205,12 @@ public class Controller {
 		m_View.getMyMenuBar().getMIMiddleToOut().addActionListener(e->{
 			m_Model.m_currentGradient = Model.MIDDLE_TO_OUTSIDE_GRADIENT;
 		});
+		m_View.getMyMenuBar().getMI3D().addActionListener(e->{
+			m_Model.set3D(true);
+		});
+		m_View.getMyMenuBar().getMI3Dback().addActionListener(e->{
+			m_Model.set3D(false);
+		});
 	}
 
 	public void applyPopupListeners() {
@@ -205,7 +218,7 @@ public class Controller {
 			if(!m_Model.isMergeReady())
 			m_Model.cutOut();
 			else {
-				new InfoDialog(m_View, "Info", false, "Hat keinen Effekt", true);
+				new InfoDialog(m_View, "Info", false, "No effect", true);
 			}
 		});
 		m_View.getCenterImageComponent().getPopup().getMITranslateRandom().addActionListener(e -> {
@@ -213,7 +226,6 @@ public class Controller {
 			int[] random = new int[2];
 			random = m_Model.getRandomValuesForTranslation();
 			if(m_Model.getEndPoint().x == -1) {
-				System.out.println("KEINE AUSWAHL");
 				m_Model.translate(m_View.getCenterImageComponent().getMyImage(), random[0], random[1]);
 			}else {
 				if(!m_Model.isMergeReady()) {
@@ -222,63 +234,130 @@ public class Controller {
 				m_Model.translateSelection(random[0], random[1]);		
 			}
 			
+			
 		});
 
 		m_View.getCenterImageComponent().getPopup().getMITranslateValue().addActionListener(e -> {
-			PopupDialog dialog = new PopupDialog(m_View, "Custom Translation", "Verschiebung nach rechts:",
-					"Verschiebung nach unten:", "Ganze Zalen von --2000 bis 2000 sind sinnvoll", false);
+			PopupDialog dialog = new PopupDialog(m_View, "Custom Translation", "Move right:",
+					"Move down:", "Integers from -2000 to 2000 are reasonable", false);
 			if (!dialog.quitDialog()) {
 				int h = dialog.getIntValue1();
 				int v = dialog.getIntValue2();
-				m_Model.translate(m_View.getCenterImageComponent().getMyImage(), h, v);
+				if(m_Model.getEndPoint().x == -1) {
+					m_Model.translate(m_View.getCenterImageComponent().getMyImage(), h, v);
+				}else {
+					if(!m_Model.isMergeReady()) {
+						m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+					}
+					m_Model.translateSelection(h, v);		
+				}
 			}
 		});
 
-		m_View.getCenterImageComponent().getPopup().getMIRotateRandom().addActionListener(e -> {
+		m_View.getCenterImageComponent().getPopup().getMIRotateRandom().addActionListener(e -> {			
 			double alpha = m_Model.getRandomValueForRotation();
-			m_Model.rotate(m_View.getCenterImageComponent().getMyImage(), alpha, false);
+			if(m_Model.getEndPoint().x == -1) {
+				m_Model.rotate(m_View.getCenterImageComponent().getMyImage(), alpha, false);
+			}else {
+				if(!m_Model.isMergeReady()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+				m_Model.rotateSelection(alpha);		
+			}
 		});
 		m_View.getCenterImageComponent().getPopup().getMIRotateValue().addActionListener(e -> {
 			PopupDialog dialog = new PopupDialog(m_View, "Custom Rotation", "Rotation: ",
-					"Sinnvoll sind Double-Wert von -1 bis 1", true);
+					"Values in degree", true);
 			if (!dialog.quitDialog()) {
 				double alpha = dialog.getDoubleValue1();
 				boolean spinAroundMiddle = dialog.getSpinAroundMid();
-				m_Model.rotate(m_View.getCenterImageComponent().getMyImage(), alpha, spinAroundMiddle);
+				if(m_Model.getEndPoint().x == -1) {
+					m_Model.rotate(m_View.getCenterImageComponent().getMyImage(), alpha, spinAroundMiddle);
+				}else {
+					if(!m_Model.isMergeReady()) {
+						m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+					}
+					m_Model.rotateSelection(alpha);		
+				}	
+				
 			}
 		});
 
 		m_View.getCenterImageComponent().getPopup().getMIShearingXRandom().addActionListener(e -> {
 			double amount = m_Model.getRandomValueForXShearing();
-			m_Model.shearX(m_View.getCenterImageComponent().getMyImage(), amount);
+			
+			if(m_Model.getEndPoint().x == -1) {
+				m_Model.shearX(m_View.getCenterImageComponent().getMyImage(), amount);
+			}else {
+				if(!m_Model.isMergeReady()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+
+				m_Model.shearXSelection(amount);
+			}
 		});
 
 		m_View.getCenterImageComponent().getPopup().getMIShearingYRandom().addActionListener(e -> {
 			double amount = m_Model.getRandomValueForYShearing();
-			m_Model.shearY(m_View.getCenterImageComponent().getMyImage(), amount);
+			if(m_Model.getEndPoint().x == -1) {
+				m_Model.shearY(m_View.getCenterImageComponent().getMyImage(), amount);
+			}else {
+				if(!m_Model.isMergeReady()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+
+				m_Model.shearYSelection(amount);
+			}
 		});
 
 		m_View.getCenterImageComponent().getPopup().getMIShearingValue().addActionListener(e -> {
 			PopupDialog dialog = new PopupDialog(m_View, "Custom Shearing", "X-Shearing", "Y-Shearing",
-					"Double Werte von (-) 0.1 bis 0.8 sind sinnvoll", true);
+					"Double values from (-) 0.1 to 0.8 are reasonable", true);
 			if (!dialog.quitDialog()) {
 				double shearX = dialog.getDoubleValue1();
 				double shearY = dialog.getDoubleValue2();
 				m_Model.shearXY(m_View.getCenterImageComponent().getMyImage(), shearX, shearY);
+				if(m_Model.getEndPoint().x == -1) {
+					m_Model.shearXY(m_View.getCenterImageComponent().getMyImage(), shearX, shearY);
+				}else {
+					if(!m_Model.isMergeReady()) {
+						m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+					}
+
+					m_Model.shearXYSelection(shearX, shearY);
+				}
 			}
 		});
 
 		m_View.getCenterImageComponent().getPopup().getMIScalingRandom().addActionListener(e -> {
 			double scaleFactor = m_Model.getRandomValueForScaling();
-			m_Model.scale(m_View.getCenterImageComponent().getMyImage(), scaleFactor, scaleFactor);
+			
+			if(m_Model.getEndPoint().x == -1) {
+				m_Model.scale(m_View.getCenterImageComponent().getMyImage(), scaleFactor, scaleFactor);
+			}else {
+				if(!m_Model.isMergeReady()) {
+					m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+				}
+
+				m_Model.scaleSelection(scaleFactor, scaleFactor);
+			}
+			
 		});
 		m_View.getCenterImageComponent().getPopup().getMIScalingValue().addActionListener(e -> {
-			PopupDialog dialog = new PopupDialog(m_View, "Czstom Scaling", "X-Scaling", "Y-Scaling",
-					"Double Werte von 0.3 bis 1.7 sind sinnvoll", true);
+			PopupDialog dialog = new PopupDialog(m_View, "Custom Scaling", "X-Scaling", "Y-Scaling",
+					"Double values from 0.3 to 1.7 are reasonable", true);
 			if (!dialog.quitDialog()) {
 				double scaleX = dialog.getDoubleValue1();
 				double scaleY = dialog.getDoubleValue2();
-				m_Model.scale(m_View.getCenterImageComponent().getMyImage(), scaleX, scaleY);
+				if(m_Model.getEndPoint().x == -1) {
+					m_Model.scale(m_View.getCenterImageComponent().getMyImage(), scaleX, scaleY);
+				}else {
+					if(!m_Model.isMergeReady()) {
+						m_Model.cutOut(m_View.getCenterImageComponent().getMyImage());
+					}
+
+					m_Model.scaleSelection(scaleX, scaleY);
+				}
 			}
 		});
 	}
@@ -294,11 +373,9 @@ public class Controller {
 		private Thread fadingThread;
 		private int m_endingMyImagePos;
 
-		public Fader(int currentMyImagePos) {
-			System.out.println("neew Fader");
+		public Fader(int currentMyImagePos) {			
 			m_endingMyImagePos = currentMyImagePos;
-			this.fadingThread = new Thread(this);
-			System.out.println("start");
+			this.fadingThread = new Thread(this);		
 			this.fadingThread.start();
 		}
 
@@ -331,7 +408,7 @@ public class Controller {
 					}
 				}
 				if (posImg1 == -1) {
-					new InfoDialog(m_View, "Fading Error", "Es ist kein Bild ausgewählt");					
+					new InfoDialog(m_View, "Fading Error", "No picture selected");					
 					break;
 				}
 
@@ -342,7 +419,7 @@ public class Controller {
 					}
 				}
 				if (posImg2 == -1) {
-					new InfoDialog(m_View, "Fading Error", "Es ist nur ein Bild ausgewählt, es werden mindestens zwei benötigt!");					
+					new InfoDialog(m_View, "Fading Error", "Only one picture selected, need at least two");					
 					break;
 				}
 
@@ -358,7 +435,7 @@ public class Controller {
 				
 
 			}
-			System.out.println("rip fader");
+			
 			stopFading();
 			if (m_endingMyImagePos != -1)
 				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(m_endingMyImagePos));

@@ -37,7 +37,7 @@ class MyFileChooser extends JFileChooser {
 		super.updateUI();
 		showOpenDialog(view);
 		File[] files = getSelectedFiles();
-		LoadingDialog loadingDialog = new LoadingDialog(view, "Loading Images", "Lädt neue Bilder ein", files.length);
+		LoadingDialog loadingDialog = new LoadingDialog(view, "Loading Images", "Reads images in", files.length);
 		images = new Image[files.length];
 		try {
 			MediaTracker mt = new MediaTracker(this);
