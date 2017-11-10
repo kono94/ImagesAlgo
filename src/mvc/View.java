@@ -62,6 +62,9 @@ public class View extends JFrame {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			//create Dummy (so morphs dont through nullPointer)
+			m_MyImage = new MyImage(this);
+			m_Model.setCenterMyImage(m_MyImage);
 			m_Model.createWorkingImage(this);
 			m_workImg = m_Model.getWorkingMyImage().getImage();
 
@@ -71,13 +74,12 @@ public class View extends JFrame {
 			setPreferredSize(new Dimension(1280, 720));
 			addMouseListener(m_Popup.new PopupMouseListener());
 			addMouseWheelListener(e->{
-				System.out.println(e.getWheelRotation());
 				if(e.getWheelRotation() < 0) {
 						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
-								(int) (e.getY() * getScalingFactorY())), 0.9);
+								(int) (e.getY() * getScalingFactorY())), 0.97);
 				}else {
 						m_Model.scaleOnPoint(new Point((int) (e.getX() * getScalingFactorX()),
-								(int) (e.getY() * getScalingFactorY())), 1.1);
+								(int) (e.getY() * getScalingFactorY())), 1.03);
 					
 				}
 			});
@@ -136,6 +138,7 @@ public class View extends JFrame {
 
 						if (Mode.currentMode == Mode.SELECT) {
 							m_Model.drawSelection();
+							//m_Model.cutOut();
 						} else if (Mode.currentMode == Mode.LINE) {
 							m_Model.generateRandomColors();
 							m_Model.drawLine();
@@ -146,6 +149,7 @@ public class View extends JFrame {
 								m_UtilityBar.getColor1Button().setBackground(new Color(m_Model.getColor1()));
 								m_UtilityBar.getColor2Button().setBackground(new Color(m_Model.getColor2()));
 							}
+							m_Model.clearWorkingLayerAndPoints();
 						}
 
 					}
@@ -153,6 +157,7 @@ public class View extends JFrame {
 				}
 
 			});
+			
 		}
 
 		@Override
@@ -242,6 +247,7 @@ public class View extends JFrame {
 		public JScrollPane getScrollPane() {
 			return m_Scrollpane;
 		}
+
 	}
 
 	public MyMenuBar getMyMenuBar() {

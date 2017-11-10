@@ -48,6 +48,7 @@ public class UtilityBar extends JComponent {
 	public UtilityBar(View view, Model m) {
 		m_Model = m;
 		m_View = view;
+		setBackground(new Color(0x00A5C5));
 		JPanel colorSelection = new JPanel();
 		colorSelection.setLayout(new FlowLayout());
 		m_color1Button = new JButton();
@@ -108,7 +109,6 @@ public class UtilityBar extends JComponent {
 		} else {
 			new InfoDialog((JFrame) view, "Error", true, "Konnte die Icons nicht einladen", false);
 		}
-
 	}
 
 	public Icon getMoveTop() {

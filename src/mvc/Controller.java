@@ -26,7 +26,7 @@ public class Controller {
 		m_Model = new Model();
 		m_View = new View(m_Model);
 		// proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
-		loadAllImagesFromDirectory();
+		//loadAllImagesFromDirectory();
 		applyKeyListeners();
 		applyMenuListeners();
 		applyPopupListeners();
@@ -50,7 +50,7 @@ public class Controller {
 			public void run() {
 				try {
 					// . means current working directory
-					File directory = new File(".");
+					File directory = new File("./pictures");
 					File[] f = directory.listFiles();
 					LoadingDialog loadingDialog = new LoadingDialog(m_View, "Loading Images", "Lädt neue Bilder ein", f.length);
 
@@ -85,11 +85,9 @@ public class Controller {
 		}.start();
 
 	}
-	public void setStartingImage() {
-		if(m_View.getCenterImageComponent().getMyImage() == null) {
+	public void setStartingImage() {		
 			if(m_Model.getMyImageVector() != null && m_Model.getMyImageVector().size() > 0)
-				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(0));
-		}
+				m_View.getCenterImageComponent().setMyImage(m_Model.getMyImageVector().get(0));		
 	}
 	public void stopFading() {
 		m_View.getUtilityBar().getIconByModus(Mode.SELECT).activate();
@@ -188,6 +186,13 @@ public class Controller {
 				m_View.getMyMenuBar().getMIrandomColor().setText("stop using random colors");
 			}
 			
+		});
+		
+		m_View.getMyMenuBar().getMIleftToRight().addActionListener(e->{
+			m_Model.m_currentGradient = Model.LEFT_TO_RIGHT_GRADIENT;
+		});
+		m_View.getMyMenuBar().getMIMiddleToOut().addActionListener(e->{
+			m_Model.m_currentGradient = Model.MIDDLE_TO_OUTSIDE_GRADIENT;
 		});
 	}
 

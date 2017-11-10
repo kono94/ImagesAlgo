@@ -24,6 +24,9 @@ public class MyMenuBar extends JMenuBar {
 	private JMenuItem m_MIputIn;
 	private JMenuItem m_MIrandomColor;
 	private JMenu m_MsettingsMenu;
+	private JMenu m_MGradientMenu;
+	private JMenuItem m_MIleftToRight;
+	private JMenuItem m_MIMidToOut;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("sans-serif", Font.PLAIN, 18);
@@ -56,8 +59,14 @@ public class MyMenuBar extends JMenuBar {
 		
 		m_MsettingsMenu = new JMenu("Settings");
 		m_MIrandomColor = new JMenuItem("start using random colors");
-		
+		m_MGradientMenu = new JMenu("Farbverlauf");
+		m_MIleftToRight = new JMenuItem("von links nach rechts");
+		m_MIMidToOut	= new JMenuItem("mitte nach auﬂen");
 		m_MsettingsMenu.add(m_MIrandomColor);
+		
+		m_MGradientMenu.add(m_MIMidToOut);
+		m_MGradientMenu.add(m_MIleftToRight);		
+		m_MsettingsMenu.add(m_MGradientMenu);
 		
 		this.add(m_MfileMenu);
 		this.add(m_MfadingMenu);
@@ -107,5 +116,10 @@ public class MyMenuBar extends JMenuBar {
 	public JMenuItem getMIrandomColor() {
 		return m_MIrandomColor;
 	}
-	
+	public JMenuItem getMIleftToRight() {
+		return m_MIleftToRight;
+	}
+	public JMenuItem getMIMiddleToOut() {
+		return m_MIMidToOut;
+	}
 }

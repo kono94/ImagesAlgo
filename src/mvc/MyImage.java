@@ -38,7 +38,7 @@ public class MyImage extends JComponent {
 	// runnable-class loops through the vector and checks if selected ==
 	// true
 	private boolean m_selected;
-	private int borderWidth = 2;
+	private int borderWidth = 4;
 
 	public MyImage(Image img, CenterImageComponent centerImageComponent) { 
 		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
