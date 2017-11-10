@@ -1,4 +1,16 @@
 Thoughgs:
+IMPORTANT:
+		m = Matrix.multiply(m, myImg.getMatrix());
+		myImg.setMatrix(m);
+		
+		=> dreht um den neuen mittelpunkt des neuen bildes, so wie man will,
+			aber bewegt sich, als wenn das bild wüsste wohin es zeigt
+			
+		m = Matrix.multiply(myImg.getMatrix(), m);
+		myImg.setMatrix(m);
+		
+		=> dreht immer um den mittelpunkt des bildes, aber bewegt sich so wie
+		es soll
 
 1) Inner classes or seperated classes?
 	- possible inner classes [view]: 

@@ -169,6 +169,10 @@ public class Controller {
 				}
 			}
 		});
+		m_View.getMyMenuBar().getMIpicFromHisto().addActionListener(e->{
+			m_Model.ImageFromHisto();
+			m_View.getCenterImageComponent().repaint();
+		});
 		
 		m_View.getMyMenuBar().getMIputIn().addActionListener(e->{
 			m_Model.mergeWorkingLayer(m_View.getCenterImageComponent().getMyImage());	

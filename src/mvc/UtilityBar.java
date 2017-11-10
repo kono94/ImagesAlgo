@@ -41,7 +41,6 @@ public class UtilityBar extends JComponent {
 	private Icon m_scaleBigger;
 	private Icon m_shearX;
 	private Icon m_shearY;
-	private Icon m_swirl;
 	private JButton m_color1Button;
 	private JButton m_color2Button;
 
@@ -96,7 +95,6 @@ public class UtilityBar extends JComponent {
 			add(m_rotateRight);
 			add(m_shearX);
 			add(m_shearY);
-			add(m_swirl);
 
 			add(colorSelection);
 			for (int i = 0; i < m_allIcons.length; i++) {
@@ -171,9 +169,6 @@ public class UtilityBar extends JComponent {
 					ImageIO.read(new File("icons/shearXPressed.png")), Model.SHEARX);
 			m_shearY = new Icon(ImageIO.read(new File("icons/shearY.png")),
 					ImageIO.read(new File("icons/shearYPressed.png")), Model.SHEARY);
-			m_swirl = new Icon(ImageIO.read(new File("icons/swirl.png")),
-					ImageIO.read(new File("icons/swirlPressed.png")), Model.MOVE_TOP);
-
 			return true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

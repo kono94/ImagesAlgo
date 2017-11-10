@@ -27,9 +27,11 @@ public class MyMenuBar extends JMenuBar {
 	private JMenu m_MGradientMenu;
 	private JMenuItem m_MIleftToRight;
 	private JMenuItem m_MIMidToOut;
+	private JMenuItem m_MIpicFromHisto;
 
 	public MyMenuBar(JFrame owner) {
-		Font f = new Font("sans-serif", Font.PLAIN, 18);
+		Font f = new Font("Comic Sans MS", Font.PLAIN, 18);
+
 		UIManager.put("Menu.font", f);
 		UIManager.put("MenuItem.font" , f);
 		m_MfileMenu = new JMenu("Files");
@@ -51,6 +53,8 @@ public class MyMenuBar extends JMenuBar {
 		
 		m_MhistoMenu = new JMenu("Histogramm");
 		m_MIcreateHisto = new JMenuItem("Erstelle Datei mit Historgramm");
+		m_MIpicFromHisto = new JMenuItem("erstelle bild aus histogramm");
+		m_MhistoMenu.add(m_MIpicFromHisto);
 		m_MhistoMenu.add(m_MIcreateHisto);
 		
 		m_MselMenu = new JMenu("Selection");
@@ -121,5 +125,8 @@ public class MyMenuBar extends JMenuBar {
 	}
 	public JMenuItem getMIMiddleToOut() {
 		return m_MIMidToOut;
+	}
+	public JMenuItem getMIpicFromHisto() {
+		return m_MIpicFromHisto;
 	}
 }

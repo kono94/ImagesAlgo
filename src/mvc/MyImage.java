@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.MemoryImageSource;
@@ -39,8 +40,17 @@ public class MyImage extends JComponent {
 	// true
 	private boolean m_selected;
 	private int borderWidth = 4;
-
+	private Point centerPoint;
+	public void changeCenterPoint(Point verschiebung) {
+		centerPoint.x += verschiebung.x;
+		centerPoint.y += verschiebung.y;
+	}
+	public Point getCenterPoint() {
+		return centerPoint;		
+	}
+	
 	public MyImage(Image img, CenterImageComponent centerImageComponent) { 
+		centerPoint = new Point(IMG_WIDTH /2, IMG_HEIGHT/2);
 		m_Matrix = new Matrix(Matrix.neutralDoubleArr());
 		m_Img = img.getScaledInstance(IMG_WIDTH, IMG_HEIGHT, Image.SCALE_SMOOTH);
 		m_ImgSrc = new MemoryImageSource(IMG_WIDTH, IMG_HEIGHT, m_CurrentPix, 0, IMG_WIDTH);

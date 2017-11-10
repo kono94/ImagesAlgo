@@ -25,6 +25,7 @@ public class View extends JFrame {
 	private UtilityBar m_UtilityBar;
 
 	public View(Model model) {
+		setTitle("Nicht schon wieder 4,0");
 		m_Model = model;
 		m_ImageBar = new ImageBarPanel(this);
 		m_CenterImageComponent = new CenterImageComponent();
