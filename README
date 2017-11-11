@@ -1,4 +1,12 @@
 Assignment 1
+BEI DER ABGABE FALSCH;
+in morphSelection():
+matrix.mult(m, historyMatrix)
+matrix.mult(historyMatrix, m)
+
+VERTASUSCHT
+.. HIER RICHTIG
+
 
 Schreiben Sie ein Java Programm, das mehrere Bilder (JPG und GIF) einlesen
 kann. Folgende Funktionen soll das Programm zur Verfügung stellen:
