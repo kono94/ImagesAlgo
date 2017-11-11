@@ -73,7 +73,7 @@ public class MyMenuBar extends JMenuBar {
 		m_MI3Dback = new JMenuItem("Disable '3D' Mode");
 		m_MsettingsMenu.add(m_MIrandomColor);
 		m_MsettingsMenu.add(m_MI3D);
-		m_MsettingsMenu.add(m_MI3D);
+		m_MsettingsMenu.add(m_MI3Dback);
 		
 		m_MGradientMenu.add(m_MIMidToOut);
 		m_MGradientMenu.add(m_MIleftToRight);		

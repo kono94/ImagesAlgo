@@ -148,9 +148,9 @@ public class Model {
 
 	public void morphSelection(Matrix m) {
 		if(m_three3Mode)
-			m = Matrix.multiply( m_WorkingLayerMyImage.getMatrix(), m);
+			m = Matrix.multiply(m, m_WorkingLayerMyImage.getMatrix());
 		else
-			m = Matrix.multiply( m, m_WorkingLayerMyImage.getMatrix());
+			m = Matrix.multiply(m_WorkingLayerMyImage.getMatrix(), m);
 		
 		int[] purePoints = calcPurePointsSelection();
 		int x1 = purePoints[0];
