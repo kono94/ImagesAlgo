@@ -383,7 +383,7 @@ public class Controller {
 						setLayout(new BorderLayout());
 						
 						
-						JSlider slider = new JSlider(0,100, 100);
+						JSlider slider = new JSlider(1,100, 100);
 						slider.setMinorTickSpacing(5);
 						slider.setMajorTickSpacing(5);
 						slider.setSnapToTicks(true);
