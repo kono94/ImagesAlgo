@@ -45,6 +45,7 @@ public class UtilityBar extends JComponent {
 	private JButton m_color1Button;
 	private JButton m_color2Button;
 	private Icon m_zoomOnPoint;
+	private Icon m_reduceColors;
 
 	public UtilityBar(View view, Model m) {
 		m_Model = m;
@@ -101,6 +102,7 @@ public class UtilityBar extends JComponent {
 			add(m_rotateRight);
 			add(m_shearX);
 			add(m_shearY);
+			add(m_reduceColors);
 
 			add(colorSelection);
 			for (int i = 0; i < m_allIcons.length; i++) {
@@ -111,7 +113,8 @@ public class UtilityBar extends JComponent {
 				}
 			}
 		} else {
-			new InfoDialog((JFrame) view, "Error", true, "Could not load Icons, which are VERY important to the program", false);
+			new InfoDialog((JFrame) view, "Error", true,
+					"Could not load Icons, which are VERY important to the program", false);
 		}
 	}
 
@@ -139,12 +142,18 @@ public class UtilityBar extends JComponent {
 		return m_shearY;
 	}
 
+	public Icon getReduceColors() {
+		return m_reduceColors;
+	}
+
 	public JButton getColor1Button() {
 		return m_color1Button;
 	}
+
 	public JButton getColor2Button() {
 		return m_color2Button;
 	}
+
 	public boolean loadIcons() {
 		try {
 			m_pfeil = new Icon(ImageIO.read(new File("icons/pfeil.png")),
@@ -177,8 +186,10 @@ public class UtilityBar extends JComponent {
 					ImageIO.read(new File("icons/shearYPressed.png")), Model.SHEARY);
 			m_rotateOnPoint = new Icon(ImageIO.read(new File("icons/rotatePoint.png")),
 					ImageIO.read(new File("icons/rotatePoint_active.png")), Mode.ROTATE_POINT);
-			m_zoomOnPoint =  new Icon(ImageIO.read(new File("icons/zoomButton.png")),
+			m_zoomOnPoint = new Icon(ImageIO.read(new File("icons/zoomButton.png")),
 					ImageIO.read(new File("icons/zoomButton_active.png")), Mode.ZOOM);
+			m_reduceColors = new Icon(ImageIO.read(new File("icons/zoomButton.png")),
+					ImageIO.read(new File("icons/zoomButton_active.png")));
 			return true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -226,6 +237,15 @@ public class UtilityBar extends JComponent {
 			setMinimumSize(new Dimension(40, 40));
 			addMouseListener(new MyControlMouseAdapter(this, action));
 
+		}
+
+		public Icon(Image imgN, Image imgP) {
+			m_isActive = false;
+			m_imgN = imgN;
+			m_imgP = imgP;
+			setPreferredSize(new Dimension(40, 40));
+			setMaximumSize(new Dimension(40, 40));
+			setMinimumSize(new Dimension(40, 40));
 		}
 
 		@Override

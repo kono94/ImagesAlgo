@@ -3,11 +3,17 @@ package mvc;
 import java.awt.List;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.sql.DataTruncation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,12 +42,15 @@ public class Model {
 	private double m_currentRotation;
 	public static int MOVE_TOP = 1, MOVE_RIGHT = 2, MOVE_BOTTOM = 3, MOVE_LEFT = 4, SHEARX = 5, SHEARY = 6,
 			SCALE_BIGGER = 7, SCALE_SMALLER = 8, ROTATE_LEFT = 9, ROTATE_RIGHT = 10;
-	public int m_currentGradient;
+	private int m_currentGradient;
 	public static int LEFT_TO_RIGHT_GRADIENT = 0, MIDDLE_TO_OUTSIDE_GRADIENT = 1;
 	private volatile boolean m_three3Mode;
-	
+	public static final int SHIFT_RED = 16, SHIFT_GREEN = 8, SHIFT_BLUE = 0;
+	private Approximator approximator = new Approximator();
+
 	public Model() {
-		
+		int[] test = { 3, 6, 7, 8, 12, 24 };
+		// System.out.println(binSearch(test, 25));
 		m_VecAllMyImages = new Vector<MyImage>(5, 0);
 		m_currentGradient = LEFT_TO_RIGHT_GRADIENT;
 		m_Color1 = 0x00FF33;
@@ -50,6 +59,12 @@ public class Model {
 
 	public void addImage(MyImage img) {
 		m_VecAllMyImages.addElement(img);
+	}
+
+	public void reduceColors(int percent) {
+		
+		approximator.reduceColors(percent, m_CenterMyImg);
+		
 	}
 
 	public void manageIconAction(int action, MouseEvent e) {
@@ -95,7 +110,8 @@ public class Model {
 			} else if (action == MOVE_LEFT) {
 				translate(m_CenterMyImg, -20, 0);
 			} else if (action == SCALE_BIGGER) {
-				if(m_CenterMyImg == null) System.out.println("leeer");
+				if (m_CenterMyImg == null)
+					System.out.println("leeer");
 				scale(m_CenterMyImg, 1.1, 1.1);
 			} else if (action == SCALE_SMALLER) {
 				scale(m_CenterMyImg, 0.9, 0.9);
@@ -115,14 +131,14 @@ public class Model {
 				rotate(m_CenterMyImg, -3, true);
 			}
 		}
-	
+
 	}
 
 	public void morph(Matrix m, MyImage myImg) {
-		if(m_three3Mode)
+		if (m_three3Mode)
 			m = Matrix.multiply(m, myImg.getMatrix());
 		else
-			m = Matrix.multiply(myImg.getMatrix(),m);
+			m = Matrix.multiply(myImg.getMatrix(), m);
 		myImg.setMatrix(m);
 
 		for (int x = 0; x < MyImage.IMG_WIDTH; ++x) {
@@ -147,11 +163,11 @@ public class Model {
 	}
 
 	public void morphSelection(Matrix m) {
-		if(m_three3Mode)
+		if (m_three3Mode)
 			m = Matrix.multiply(m, m_WorkingLayerMyImage.getMatrix());
 		else
 			m = Matrix.multiply(m_WorkingLayerMyImage.getMatrix(), m);
-		
+
 		int[] purePoints = calcPurePointsSelection();
 		int x1 = purePoints[0];
 		int y1 = purePoints[1];
@@ -224,8 +240,8 @@ public class Model {
 	}
 
 	public void translate(MyImage myImg, int h, int v) {
-		myImg.changeCenterPoint(h,v);
-		Matrix transM = Matrix.inverseTranslation(h,v);
+		myImg.changeCenterPoint(h, v);
+		Matrix transM = Matrix.inverseTranslation(h, v);
 		// Matrix transM = Matrix.inverseXShearing(-3.4);
 		morph(transM, myImg);
 	}
@@ -237,11 +253,11 @@ public class Model {
 			rotateM = Matrix.inverseRotation(alpha);
 		} else {
 			Matrix toTopLeftM = Matrix.inverseTranslation(myImg.getCenterPoint().x, myImg.getCenterPoint().y);
-			Matrix spinM = Matrix.inverseRotation(alpha); 
+			Matrix spinM = Matrix.inverseRotation(alpha);
 			Matrix backM = Matrix.inverseTranslation(-myImg.getCenterPoint().x, -myImg.getCenterPoint().y);
 			rotateM = Matrix.multiply(backM, (Matrix.multiply(spinM, toTopLeftM)));
 		}
-	
+
 		morph(rotateM, myImg);
 	}
 
@@ -249,7 +265,7 @@ public class Model {
 		Matrix shearM = Matrix.inverseXShearing(-shX);
 		Matrix toTopLeftM = Matrix.inverseTranslation(myImg.getCenterPoint().x, myImg.getCenterPoint().y);
 		Matrix backM = Matrix.inverseTranslation(-myImg.getCenterPoint().x, -myImg.getCenterPoint().y);
-		Matrix all = Matrix.multiply(backM, (Matrix.multiply(shearM,toTopLeftM)));
+		Matrix all = Matrix.multiply(backM, (Matrix.multiply(shearM, toTopLeftM)));
 		morph(all, myImg);
 	}
 
@@ -257,7 +273,7 @@ public class Model {
 		Matrix shearM = Matrix.inverseYShearing(shY);
 		Matrix toTopLeftM = Matrix.inverseTranslation(myImg.getCenterPoint().x, myImg.getCenterPoint().y);
 		Matrix backM = Matrix.inverseTranslation(-myImg.getCenterPoint().x, -myImg.getCenterPoint().y);
-		Matrix all = Matrix.multiply(backM, (Matrix.multiply(shearM,toTopLeftM)));
+		Matrix all = Matrix.multiply(backM, (Matrix.multiply(shearM, toTopLeftM)));
 		morph(all, myImg);
 	}
 
@@ -265,18 +281,13 @@ public class Model {
 		Matrix toTopLeftM = Matrix.inverseTranslation(myImg.getCenterPoint().x, myImg.getCenterPoint().y);
 		Matrix backM = Matrix.inverseTranslation(-myImg.getCenterPoint().x, -myImg.getCenterPoint().y);
 		Matrix scaleM = Matrix.inverserScaling(scaleX, scaleY);
-		Matrix all = Matrix.multiply(backM, (Matrix.multiply(scaleM,toTopLeftM)));
+		Matrix all = Matrix.multiply(backM, (Matrix.multiply(scaleM, toTopLeftM)));
 		morph(all, myImg);
-		
-		
+
 		//
-		
-		
-		
+
 		// BILD AUS HISTORGRAMM ERSTELLEN IN FARBREIHENFOLGE
-		
-		
-		
+
 		//
 	}
 
@@ -286,35 +297,38 @@ public class Model {
 	}
 
 	public void translateSelection(int h, int v) {
-			
-			Matrix transM = Matrix.inverseTranslation(h, v);
-			m_WorkingLayerMyImage.changeCenterPoint(h,v);
 
-			morphSelection(transM);
-		}
+		Matrix transM = Matrix.inverseTranslation(h, v);
+		m_WorkingLayerMyImage.changeCenterPoint(h, v);
+
+		morphSelection(transM);
+	}
 
 	public void scaleSelection(double xF, double yF) {
-	
-		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x, m_WorkingLayerMyImage.getCenterPoint().y);
+
+		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x,
+				m_WorkingLayerMyImage.getCenterPoint().y);
 		Matrix scale = Matrix.inverserScaling(xF, yF);
-		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x, -m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x,
+				-m_WorkingLayerMyImage.getCenterPoint().y);
 		Matrix all = Matrix.multiply(backM, Matrix.multiply(scale, toTopLeftM));
 		morphSelection(all);
 	}
 
 	public void rotateSelection(double alpha) {
 		alpha = Math.toRadians(alpha);
-		m_currentRotation = (m_currentRotation + alpha)%(Math.PI*2);
-		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x, m_WorkingLayerMyImage.getCenterPoint().y);
+		m_currentRotation = (m_currentRotation + alpha) % (Math.PI * 2);
+		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x,
+				m_WorkingLayerMyImage.getCenterPoint().y);
 		Matrix spinM = Matrix.inverseRotation(alpha);
-		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x, -m_WorkingLayerMyImage.getCenterPoint().y);
-		Matrix rotateM = Matrix.multiply(backM , (Matrix.multiply(spinM, toTopLeftM)));
+		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x,
+				-m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix rotateM = Matrix.multiply(backM, (Matrix.multiply(spinM, toTopLeftM)));
 		morphSelection(rotateM);
 	}
 
 	public void shearXSelection(double shX) {
-	
-	
+
 		// Pulls in both directions
 		// Matrix toTopLeftM = Matrix.inverseTranslation(-(x1 + (x2 - x1) / 2), -(y1 +
 		// (y2 - y1) / 2));
@@ -322,26 +336,33 @@ public class Model {
 		// Matrix backM = Matrix.inverseTranslation((x1 + (x2 - x1) / 2), (y1 + (y2 -
 		// y1) / 2));
 		//
-		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x, m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x,
+				m_WorkingLayerMyImage.getCenterPoint().y);
 		Matrix shearX = Matrix.inverseXShearing(shX);
-		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x, -m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x,
+				-m_WorkingLayerMyImage.getCenterPoint().y);
 		Matrix shearM = Matrix.multiply(backM, (Matrix.multiply(shearX, toTopLeftM)));
 		morphSelection(shearM);
 	}
 
 	public void shearYSelection(double shY) {
-	
-		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x, m_WorkingLayerMyImage.getCenterPoint().y);
+
+		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x,
+				m_WorkingLayerMyImage.getCenterPoint().y);
 		Matrix shearY = Matrix.inverseYShearing(shY);
-		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x, -m_WorkingLayerMyImage.getCenterPoint().y);
-		Matrix shearM = Matrix.multiply(backM, (Matrix.multiply(shearY,toTopLeftM)));
+		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x,
+				-m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix shearM = Matrix.multiply(backM, (Matrix.multiply(shearY, toTopLeftM)));
 		morphSelection(shearM);
 	}
+
 	public void shearXYSelection(double shX, double shY) {
 		Matrix shearXY = Matrix.multiply(Matrix.inverseXShearing(shX), Matrix.inverseYShearing(shY));
-		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x, m_WorkingLayerMyImage.getCenterPoint().y);
-		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x, -m_WorkingLayerMyImage.getCenterPoint().y);
-		Matrix shearM = Matrix.multiply(backM, (Matrix.multiply(shearXY,toTopLeftM)));
+		Matrix toTopLeftM = Matrix.inverseTranslation(m_WorkingLayerMyImage.getCenterPoint().x,
+				m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix backM = Matrix.inverseTranslation(-m_WorkingLayerMyImage.getCenterPoint().x,
+				-m_WorkingLayerMyImage.getCenterPoint().y);
+		Matrix shearM = Matrix.multiply(backM, (Matrix.multiply(shearXY, toTopLeftM)));
 		morphSelection(shearM);
 	}
 
@@ -358,13 +379,14 @@ public class Model {
 		morph(all, m_CenterMyImg);
 		// morph(all, m_WorkingLayerMyImage);
 	}
+
 	public void rotateOnPoint(Point p, double alpha) {
 		alpha = Math.toRadians(alpha);
 		if (Mode.currentMode == Mode.SELECT && m_EndPoint.x != -1) {
 			if (!isMergeReady()) {
 				cutOut(m_CenterMyImg);
 			}
-		}		
+		}
 		Matrix move = Matrix.inverseTranslation(-p.x, -p.y);
 		Matrix scale = Matrix.inverseRotation(alpha);
 		Matrix back = Matrix.inverseTranslation(p.x, p.y);
@@ -390,7 +412,7 @@ public class Model {
 		clearAllPix(m_WorkingLayerMyImage.getCurrentPix());
 		m_WorkingLayerMyImage.fullReset();
 		m_WorkingLayerMyImage.newPixels();
-		m_WorkingLayerMyImage.setCenterPoint(MyImage.IMG_WIDTH/2, MyImage.IMG_HEIGHT/2);
+		m_WorkingLayerMyImage.setCenterPoint(MyImage.IMG_WIDTH / 2, MyImage.IMG_HEIGHT / 2);
 	}
 
 	public void mergeWorkingLayer(MyImage image) {
@@ -406,7 +428,7 @@ public class Model {
 	}
 
 	public int[] calcPurePointsSelection() {
-		
+
 		int[] purePoints = new int[4];
 		purePoints[0] = m_StartPoint.x < m_EndPoint.x ? m_StartPoint.x : m_EndPoint.x; // x1
 		purePoints[1] = m_StartPoint.y < m_EndPoint.y ? m_StartPoint.y : m_EndPoint.y; // y1
@@ -415,6 +437,7 @@ public class Model {
 
 		return purePoints;
 	}
+
 	public void drawSelection() {
 		int[] purePoints = calcPurePointsSelection();
 		int x1 = purePoints[0];
@@ -555,7 +578,7 @@ public class Model {
 
 	public int calcColor(int x, int y) {
 		int percent = 0;
-		if (Mode.currentMode == Mode.CIRCLE ||   Mode.currentMode == Mode.FILLED_CIRCLE) {
+		if (Mode.currentMode == Mode.CIRCLE || Mode.currentMode == Mode.FILLED_CIRCLE) {
 			if (m_currentGradient == LEFT_TO_RIGHT_GRADIENT) {
 				double w = m_currentCircleRadius * 2;
 				percent = (int) (((x - m_StartPoint.x + m_currentCircleRadius) / w) * 100);
@@ -569,6 +592,7 @@ public class Model {
 			percent = (int) ((Math.abs(x - m_StartPoint.x) / w) * 100);
 		} else {
 			return 0xff000000;
+
 		}
 		return compPix(m_Color1, m_Color2, percent);
 
@@ -583,7 +607,7 @@ public class Model {
 		try {
 			writer = new PrintWriter("Histogramm.txt", "UTF-8");
 			TreeMap<Integer, Integer> colorMap = new TreeMap<Integer, Integer>();
-	
+
 			int[] pix = img.getCurrentPix();
 			for (int i = 0; i < pix.length; ++i) {
 				if (!colorMap.containsKey(pix[i])) {
@@ -592,14 +616,23 @@ public class Model {
 					colorMap.put(pix[i], (int) colorMap.get(pix[i]) + 1);
 				}
 			}
-			//Map<Integer,Integer> = new TreeMap(colorMap);
+			// Map<Integer,Integer> = new TreeMap(colorMap);
+//			 DataOutputStream out = new DataOutputStream(new
+//			 FileOutputStream("histogramBytes.txt"));
+			// int gesamt = colorMap.size();
+			// int counter = 0;
 			for (Integer color : colorMap.keySet()) {
+				// counter++;
+//				// System.out.println( counter + " von " + gesamt);
+//				 out.writeInt(color);
+//				 out.writeInt((Integer)colorMap.get(color));
+
 				writer.println(Integer.toHexString(color) + ": " + (Integer) colorMap.get(color));
 			}
-	
+
 			writer.close();
 			return true;
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
@@ -607,31 +640,71 @@ public class Model {
 	}
 
 	public void ImageFromHisto() {
+		long startzeit = System.currentTimeMillis();
 		try {
-		BufferedReader in = new BufferedReader(new FileReader("./Histogramm.txt"));
-		String str;
-	
-		ArrayList<String> list = new ArrayList<String>();
-		while((str = in.readLine()) != null){
-		    list.add(str);
-		}
-		
-		String[] stringArr = list.toArray(new String[0]);
-		System.out.println(stringArr.length);
-		int pos = 0;
-		for (int i = 0; i < stringArr.length; i++) {
-		 int  howOften = Integer.parseInt(stringArr[i].substring(stringArr[i].indexOf(" ")+1, stringArr[i].length()));
-			for(int k =0; k < howOften; ++k) {
-			m_CenterMyImg.getCurrentPix()[pos] = (int) Long.parseLong(stringArr[i].substring(0, stringArr[i].indexOf(":")),16);
-				pos++;
+			BufferedReader in = new BufferedReader(new FileReader("./Histogramm.txt"));
+			String str;
+
+			ArrayList<String> list = new ArrayList<String>();
+			while ((str = in.readLine()) != null) {
+				list.add(str);
 			}
-			
+
+			String[] stringArr = list.toArray(new String[0]);
+			System.out.println(stringArr.length);
+			int pos = 0;
+			for (int i = 0; i < stringArr.length; i++) {
+				int howOften = Integer
+						.parseInt(stringArr[i].substring(stringArr[i].indexOf(" ") + 1, stringArr[i].length()));
+				for (int k = 0; k < howOften; ++k) {
+					m_CenterMyImg.getCurrentPix()[pos] = (int) Long
+							.parseLong(stringArr[i].substring(0, stringArr[i].indexOf(":")), 16);
+					pos++;
+				}
+
+			}
+
 			m_CenterMyImg.newPixels();
-		}
-		}catch(Exception e){
+			System.out.println("STRING-METHODE fertig in: " + (System.currentTimeMillis() - startzeit));
+		} catch (Exception e) {
 			System.out.println("Error Reading Histogramm in");
 			e.printStackTrace();
 		}
+
+//		System.out.println(startzeit);
+//		try {
+//			startzeit = System.currentTimeMillis();
+//			BufferedReader in = new BufferedReader(new FileReader("histogramBytes.txt"));
+//			int color = 0;
+//			int anzahl = 0;
+//			int pos = 0;
+//
+//			int i = 0;
+//			int line;
+//			while ((line = in.read()) != -1) {
+//				if (i % 2 == 0) {
+//					color = line;
+//				} else {
+//					anzahl = line;
+//					for (int l = 0; l < anzahl; l++) {
+//						System.out.println(pos);
+//						//m_CenterMyImg.getCurrentPix()[pos] = color;
+//						pos++;
+//					}
+//				}
+//				++i;
+//			}
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.out.println("exception abgefangen");
+//		}
+//
+//		m_CenterMyImg.newPixels();
+//		System.out.println("byte-methdode fertig in: " + (System.currentTimeMillis() - startzeit));
+
+		// System.out.println(System.currentTimeMillis());
+
 	}
 
 	public boolean isMergeReady() {
@@ -702,13 +775,17 @@ public class Model {
 		return m_EndPoint;
 	}
 
+	public int getCurrentGradient() {
+		return m_currentGradient;
+	}
+
 	public Point getMidOfSelection() {
 		int[] purePoints = calcPurePointsSelection();
-		int x = purePoints[0] + (purePoints[2] -purePoints[0])/2;
-		int y = purePoints[1] + (purePoints[3] - purePoints[1]) /2;
+		int x = purePoints[0] + (purePoints[2] - purePoints[0]) / 2;
+		int y = purePoints[1] + (purePoints[3] - purePoints[1]) / 2;
 		ThreeDimVector oldMP = new ThreeDimVector(x, y);
 		ThreeDimVector newMP = Matrix.multiplyWithVector(m_WorkingLayerMyImage.getMatrix(), oldMP);
-		
+
 		return new Point(newMP.getX(), newMP.getY());
 	}
 
@@ -717,8 +794,14 @@ public class Model {
 		m_StartPoint.x = p.x;
 		m_StartPoint.y = p.y;
 	}
+
 	public void set3D(boolean b) {
 		m_three3Mode = b;
+	}
+
+	public void setGradient(int gradient) {
+		if (gradient == LEFT_TO_RIGHT_GRADIENT || gradient == MIDDLE_TO_OUTSIDE_GRADIENT)
+			m_currentGradient = gradient;
 	}
 
 	public void setEndPoint(Point p) {
@@ -729,11 +812,11 @@ public class Model {
 		int y1 = pureP[1];
 		int x2 = pureP[2];
 		int y2 = pureP[3];
-		
-		int xP = x1 + (x2-x1)/2;
-		int yP = y1 + (y2 -y1)/2;
+
+		int xP = x1 + (x2 - x1) / 2;
+		int yP = y1 + (y2 - y1) / 2;
 		m_WorkingLayerMyImage.setCenterPoint(xP, yP);
-		
+
 	}
 
 	public void setPixelInArr(int[] pix, int x, int y) {

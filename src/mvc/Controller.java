@@ -1,6 +1,8 @@
 package mvc;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.event.KeyAdapter;
@@ -12,6 +14,8 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.JDialog;
+import javax.swing.JSlider;
 
 import mvc.Model.Matrix;
 import mvc.UtilityBar.Icon;
@@ -38,10 +42,11 @@ public class Controller {
 		m_View.getImageBarPanel().revalidate();
 		
 		// proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
-		//loadAllImagesFromDirectory();
+		loadAllImagesFromDirectory();
 		applyKeyListeners();
 		applyMenuListeners();
 		applyPopupListeners();
+		applyUtilityListeners();
 	}
 
 	public void proceedJFileChooserInput(Image[] imgs) {
@@ -200,10 +205,10 @@ public class Controller {
 		});
 		
 		m_View.getMyMenuBar().getMIleftToRight().addActionListener(e->{
-			m_Model.m_currentGradient = Model.LEFT_TO_RIGHT_GRADIENT;
+			m_Model.setGradient(Model.LEFT_TO_RIGHT_GRADIENT);
 		});
 		m_View.getMyMenuBar().getMIMiddleToOut().addActionListener(e->{
-			m_Model.m_currentGradient = Model.MIDDLE_TO_OUTSIDE_GRADIENT;
+			m_Model.setGradient(Model.MIDDLE_TO_OUTSIDE_GRADIENT);
 		});
 		m_View.getMyMenuBar().getMI3D().addActionListener(e->{
 			m_Model.set3D(true);
@@ -363,12 +368,42 @@ public class Controller {
 	}
 
 	
-//	public void applyUtilityListeners() {
+	public void applyUtilityListeners() {
 //		m_View.getUtilityBar().getMoveTop().addMouseListener(new ControlMouseAdapter(Model.MOVE_TOP));	
 //		m_View.getUtilityBar().getMoveRight().addMouseListener(new ControlMouseAdapter(Model.MOVE_RIGHT));
 //		m_View.getUtilityBar().getMoveBottom().addMouseListener(new ControlMouseAdapter(Model.MOVE_BOTTOM));		
 //		m_View.getUtilityBar().getMoveLeft().addMouseListener(new ControlMouseAdapter(Model.MOVE_LEFT));
-//	}
+	
+		m_View.getUtilityBar().getReduceColors().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				JDialog dialog = new JDialog(m_View, "Reduce Color", true) {
+					{
+						setLocationRelativeTo(null);
+						setLayout(new BorderLayout());
+						
+						
+						JSlider slider = new JSlider(0,100, 100);
+						slider.setMinorTickSpacing(5);
+						slider.setMajorTickSpacing(5);
+						slider.setSnapToTicks(true);
+						slider.setPaintTicks(true);
+						slider.setPaintLabels(true);
+						
+						slider.addChangeListener(e->{
+							//System.out.println(slider.getValue());
+							m_Model.reduceColors(slider.getValue());
+						});
+						setSize(400, 200);
+						slider.setMinimumSize(new Dimension(400,200));
+						add(BorderLayout.CENTER, slider);
+						setVisible(true);
+					}
+				};
+			}
+		});
+		
+	}
 	class Fader implements Runnable {
 		private Thread fadingThread;
 		private int m_endingMyImagePos;
@@ -408,7 +443,7 @@ public class Controller {
 					}
 				}
 				if (posImg1 == -1) {
-					new InfoDialog(m_View, "Fading Error", "No picture selected");					
+					new InfoDialog(m_View, "Fading Error", "No picture selected! (right click the small images in the bottom panel to select)");					
 					break;
 				}
 
