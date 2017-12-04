@@ -87,20 +87,19 @@ public class Approximator {
 		replaceMap.put(0, 0);
 
 		for (int i = grenze; i < m_gesamt; i++) {
-			
-			replaceMap.put(m_colors[i], getClosestColor(m_colors[i]));
+			int newC = getClosestColor(m_colors[i]);
+			System.out.println(newC);
+			replaceMap.put(m_colors[i], newC );
 		}
 
 		for (int i = 0; i < myImg.getCurrentPix().length; i++) {
 			int colorInPix = myImg.getOriginalPix()[i];
 			if (replaceMap.get(colorInPix) != null)
 				myImg.getCurrentPix()[i] = replaceMap.get(colorInPix);
-
 		}
 
 		myImg.newPixels();
 		return;
-
 	}
 
 	private int getClosestColor(int oldC) {
@@ -145,10 +144,11 @@ public class Approximator {
 			}
 			tmpAbs = calcAbstand(B[leftRightPoints[1]], colorInPix);
 			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs;
+				minAbstand = tmpAbs; 
 				newC = B[leftRightPoints[1]];
 			}		
-
+		
+			if(1==2) {
 			int minR = ((colorInPix >> Model.SHIFT_RED) & 0xff) - minAbstand;
 			int maxR = ((colorInPix >> Model.SHIFT_RED) & 0xff) + minAbstand;			
 
@@ -156,14 +156,16 @@ public class Approximator {
 			// ein nach links und rechts in jedem vektor, ++ nach jedem
 			// iterationsschritt
 			int spannweite = 1;
+			
 			boolean leftDone, rightDone;
 			leftDone = rightDone = false;
 			// RED
 			while (!leftDone && !rightDone) {
-				if ( rightDone && startPointRed + spannweite < R.length && ((R[startPointRed + spannweite] >> Model.SHIFT_RED) & 0xff) < maxR) {
+				if (!rightDone && startPointRed + spannweite < R.length && ((R[startPointRed + spannweite] >> Model.SHIFT_RED) & 0xff) < maxR) {
 					tmpAbs = calcAbstand(R[startPointRed + spannweite], colorInPix);
 					if (tmpAbs < minAbstand) {
 						minAbstand = tmpAbs;
+						maxR = ((colorInPix >> Model.SHIFT_RED) & 0xff) + minAbstand;
 						newC = R[startPointRed + spannweite];
 					}
 				}else{
@@ -174,6 +176,7 @@ public class Approximator {
 					tmpAbs = calcAbstand(R[startPointRed - spannweite], colorInPix);
 					if (tmpAbs < minAbstand) {
 						minAbstand = tmpAbs;
+						minR = ((colorInPix >> Model.SHIFT_RED) & 0xff) - minAbstand;
 						newC = R[startPointRed - spannweite];
 					}
 				}else{
@@ -186,14 +189,16 @@ public class Approximator {
 			int minG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) - minAbstand;
 			int maxG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) + minAbstand;
 			leftDone = rightDone = false;
+			spannweite  = 1;
 
 			// GREEN
 			while (!leftDone && !rightDone) {
-				if ( rightDone && startPointGreen + spannweite < G.length && ((G[startPointRed + spannweite] >> Model.SHIFT_GREEN) & 0xff) < maxG) {
+				if (!rightDone && startPointGreen + spannweite < G.length && ((G[startPointGreen + spannweite] >> Model.SHIFT_GREEN) & 0xff) < maxG) {
 					tmpAbs = calcAbstand(G[startPointGreen + spannweite], colorInPix);
 					if (tmpAbs < minAbstand) {
 						minAbstand = tmpAbs;
-						newC = G[startPointRed + spannweite];
+						minG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) - minAbstand;
+						newC = G[startPointGreen + spannweite];
 					}
 				}else{
 					rightDone = true;
@@ -203,6 +208,7 @@ public class Approximator {
 					tmpAbs = calcAbstand(G[startPointGreen - spannweite], colorInPix);
 					if (tmpAbs < minAbstand) {
 						minAbstand = tmpAbs;
+						maxG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) + minAbstand;
 						newC = G[startPointGreen - spannweite];
 					}
 				}else{
@@ -215,13 +221,15 @@ public class Approximator {
 			int minB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) - minAbstand;
 			int maxB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) + minAbstand;
 			leftDone = rightDone = false;
+			spannweite = 1;
 
 			// BLUE
 			while (!leftDone && !rightDone) {
-				if ( rightDone && startPointBlue + spannweite < B.length && ((G[startPointBlue + spannweite] >> Model.SHIFT_BLUE) & 0xff) < maxB) {
+				if ( !rightDone && startPointBlue + spannweite < B.length && ((G[startPointBlue + spannweite] >> Model.SHIFT_BLUE) & 0xff) < maxB) {
 					tmpAbs = calcAbstand(B[startPointBlue + spannweite], colorInPix);
 					if (tmpAbs < minAbstand) {
 						minAbstand = tmpAbs;
+						minB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) - minAbstand;
 						newC = B[startPointBlue + spannweite];
 					}
 				}else{
@@ -232,6 +240,7 @@ public class Approximator {
 					tmpAbs = calcAbstand(B[startPointBlue - spannweite], colorInPix);
 					if (tmpAbs < minAbstand) {
 						minAbstand = tmpAbs;
+						maxB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) + minAbstand;
 						newC = B[startPointBlue - spannweite];
 					}
 				}else{
@@ -240,7 +249,7 @@ public class Approximator {
 				++spannweite;
 			}
 			
-		
+			}
 		return newC;
 	}
 
@@ -262,7 +271,7 @@ public class Approximator {
 				break;
 
 			} else if (RES < 0)
-				iL = MIDDLE + 1;
+				iL = MIDDLE + 1; 
 			else
 				iR = MIDDLE - 1;
 		}
@@ -399,6 +408,7 @@ public class Approximator {
 			quickSort(arr, i, high);
 	}
 
+	
 	private void quickSortColorArray(int[] arr, int low, int high, int shift) {
 		if (arr == null || arr.length == 0)
 			return;
