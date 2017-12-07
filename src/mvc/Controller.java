@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JSlider;
 
 import mvc.Model.Matrix;
@@ -381,22 +382,25 @@ public class Controller {
 					{
 						setLocationRelativeTo(null);
 						setLayout(new BorderLayout());
+											
+						int differentColorCount =  m_Model.getColorCount();
+						JLabel colorCount = new JLabel(differentColorCount  + " / " + differentColorCount);	
 						
-						
-						JSlider slider = new JSlider(1,100, 100);
-						slider.setMinorTickSpacing(5);
-						slider.setMajorTickSpacing(5);
-						slider.setSnapToTicks(true);
-						slider.setPaintTicks(true);
-						slider.setPaintLabels(true);
+						JSlider slider = new JSlider(2, differentColorCount, differentColorCount);
+											
 						
 						slider.addChangeListener(e->{
 							//System.out.println(slider.getValue());
-							m_Model.reduceColors(slider.getValue());
+							if(slider.getValueIsAdjusting()) {
+								colorCount.setText(slider.getValue()  + " / " + differentColorCount);
+								m_Model.reduceColors(slider.getValue());								
+							}
+							
 						});
 						setSize(400, 200);
 						slider.setMinimumSize(new Dimension(400,200));
 						add(BorderLayout.CENTER, slider);
+						add(BorderLayout.SOUTH, colorCount);
 						setVisible(true);
 					}
 				};

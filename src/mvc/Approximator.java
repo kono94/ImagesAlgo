@@ -21,8 +21,7 @@ public class Approximator {
 	/*
 	 * Vorgehen: Binäre Suche in allen Farbvektoren; Kleinester Abstand, für die
 	 * Einstiegsstelle in den drei Vektoren (links und rechts prüfen) Kleinsten
-	 * Abstand speichern! Ureinstiegspunkt merken für jeden Vektor, (r, g , b
-	 * wert)
+	 * Abstand speichern! Ureinstiegspunkt merken für jeden Vektor, (r, g , b wert)
 	 * 
 	 * Loopen bis ureinstiegswert r +- stellenwert größer sind als max Abstand:
 	 * Trennung zwischen ARRAYINDEX (Stellen) und ABSTAND r +- 2 stellen vom
@@ -41,8 +40,8 @@ public class Approximator {
 	 * int[] colors - farben, position in numbers-array einsetzen, um anzahl
 	 * herauszufinden int[] numbers - wie oft kommt eine farbe vor absteigend
 	 * 
-	 * R[] - alle farben sortiert nach rotanteil G[] - nach grünanteil B[] -
-	 * nach blauanteil
+	 * R[] - alle farben sortiert nach rotanteil G[] - nach grünanteil B[] - nach
+	 * blauanteil
 	 * 
 	 * und jetzt? jeden pixel durchgehen, farbe als key in hashmap einsetzen =>
 	 * position im array ^ unnötigt, einfach binary search im colors-array? JOA
@@ -50,7 +49,7 @@ public class Approximator {
 	 * nicht drin, dann vorlesungsmethode ! Die da wäre:
 	 * 
 	 */
-	public void reduceColors(int percent, MyImage myImg) {
+	public void prepareReduction(MyImage myImg) {
 		if (myImg != m_myImg) {
 			m_histoDone = false;
 			m_myImg = myImg;
@@ -73,194 +72,140 @@ public class Approximator {
 			// faster searching (maybe just use binary search here?!)
 			colorMapToPositionMap();
 			m_histoDone = true;
-		}
-
-		int grenze = (m_gesamt * percent) / 100;
+		}		
+	}
+	public int getColorCount() {
+		return m_gesamt;
+	}
+	
+	public void reduceColors(int grenze) {
 
 		fillColorArrays(grenze);
 		sortColorArrays();
-
+	
 		HashMap<Integer, Integer> replaceMap = new HashMap<Integer, Integer>();
 		for (int i = 0; i < grenze; i++) {
 			replaceMap.put(m_colors[i], m_colors[i]);
 		}
-		replaceMap.put(0, 0);
+
 
 		for (int i = grenze; i < m_gesamt; i++) {
-			int newC = getClosestColor(m_colors[i]);
-			System.out.println(newC);
-			replaceMap.put(m_colors[i], newC );
+			replaceMap.put(m_colors[i], getClosestColor(m_colors[i]));
+//			System.out.println(Integer.toHexString(m_colors[i]) + " : " +  Integer.toHexString(getClosestColor(m_colors[i])));
+		}
+//		
+//		System.out.println("REPLACEMAP");
+//		for (Map.Entry<Integer, Integer> entry : replaceMap.entrySet()) {
+//		    System.out.println(Integer.toHexString(entry.getKey()) + " : " + 
+//		    Integer.toHexString(entry.getValue()));		    
+//		}
+
+		for (int i = 0; i < m_myImg.getCurrentPix().length; i++) {			
+			m_myImg.getCurrentPix()[i] = replaceMap.get(m_myImg.getOriginalPix()[i]);		
 		}
 
-		for (int i = 0; i < myImg.getCurrentPix().length; i++) {
-			int colorInPix = myImg.getOriginalPix()[i];
-			if (replaceMap.get(colorInPix) != null)
-				myImg.getCurrentPix()[i] = replaceMap.get(colorInPix);
-		}
-
-		myImg.newPixels();
+		m_myImg.newPixels();
 		return;
 	}
 
+
+	class ApproxElement {
+		private int m_colorToBeReplaced;
+		private int m_newColor;
+		private int m_startIndexRed;
+		private int m_startIndexGreen;
+		private int m_startIndexBlue;
+		private int m_distance;
+		public static final int RED = 0, GREEN = 1, BLUE = 2;
+
+		public ApproxElement(int color) {
+			m_colorToBeReplaced = color;
+			m_newColor = color;
+			m_distance = Integer.MAX_VALUE;
+			m_startIndexRed = -1;
+			m_startIndexGreen = -1;
+			m_startIndexBlue = -1;
+		}
+
+		// index wird aufgerufen mit
+		// testDistance(R, getStartIndexRed + offset);
+		public int testDistance(int[] arr, int index, int shift) {			
+			if (index > 0 && index < arr.length && isInDistance(arr[index], shift)) {				
+				int tmpD = calcAbstand(arr[index], m_colorToBeReplaced);
+				if (tmpD < m_distance) {
+					m_distance = tmpD;
+					m_newColor = arr[index];
+				}
+				return 1;
+			}else {
+				return 0;
+			}
+		}
+
+		public boolean isInDistance(int checkColor, int shift) {
+			return Math.abs(((checkColor >> shift) & 0xff) - ((m_colorToBeReplaced >> shift) & 0xff)) <= m_distance;
+		}
+
+		public void setStartIndexRed(int index) {
+			m_startIndexRed = index;
+		}
+
+		public void setStartIndexGreen(int index) {
+			m_startIndexGreen = index;
+		}
+
+		public void setStartIndexBlue(int index) {
+			m_startIndexBlue = index;
+		}
+
+		public int getRedStartIndex() {
+			return m_startIndexRed;
+		}
+
+		public int getGreenStartIndex() {
+			return m_startIndexGreen;
+		}
+
+		public int getBlueStartIndex() {
+			return m_startIndexBlue;
+		}
+
+		private int calcAbstand(int lrPoint, int col) {
+			int a = ((lrPoint >> Model.SHIFT_RED) & 0xff) - ((col >> Model.SHIFT_RED) & 0xff);
+			int b = ((lrPoint >> Model.SHIFT_GREEN) & 0xff) - ((col >> Model.SHIFT_GREEN) & 0xff);
+			int c = ((lrPoint >> Model.SHIFT_BLUE) & 0xff) - ((col >> Model.SHIFT_BLUE) & 0xff);
+			return (int) Math.sqrt(a * a + b * b + c * c);
+		}
+
+		public int getNewColor() {
+			return m_newColor;
+		}
+
+	}
+
 	private int getClosestColor(int oldC) {
-		int minAbstand = Integer.MAX_VALUE;
-		int newC = 0;
-	
-			int colorInPix = oldC;
+		ApproxElement appo = new ApproxElement(oldC);
 
-			int[] leftRightPoints;
-			int tmpAbs = minAbstand;
-			leftRightPoints = binSearch(R, colorInPix, Model.SHIFT_RED);
-			int startPointRed = leftRightPoints[0];
-			tmpAbs = calcAbstand(R[leftRightPoints[0]], colorInPix);
-			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs;
-				newC = R[leftRightPoints[0]];
-			}
-			tmpAbs = calcAbstand(R[leftRightPoints[1]], colorInPix);
-			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs;
-				newC = R[leftRightPoints[1]];
-			}
+		// Setzte Startpunkte
+		appo.setStartIndexRed(binSearch(R, oldC, Model.SHIFT_RED));
+		appo.setStartIndexGreen(binSearch(G, oldC, Model.SHIFT_GREEN));
+		appo.setStartIndexBlue(binSearch(B, oldC, Model.SHIFT_BLUE));
 
-			leftRightPoints = binSearch(G, colorInPix, Model.SHIFT_GREEN);
-			int startPointGreen = leftRightPoints[0];
-			tmpAbs = calcAbstand(G[leftRightPoints[0]], colorInPix);
-			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs;
-				newC = G[leftRightPoints[0]];
-			}
-			tmpAbs = calcAbstand(G[leftRightPoints[1]], colorInPix);
-			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs;
-				newC = G[leftRightPoints[1]];
-			}
-			leftRightPoints = binSearch(B, colorInPix, Model.SHIFT_BLUE);
-			int startPointBlue = leftRightPoints[0];
-			tmpAbs = calcAbstand(B[leftRightPoints[0]], colorInPix);
-			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs;
-				newC = B[leftRightPoints[0]];
-			}
-			tmpAbs = calcAbstand(B[leftRightPoints[1]], colorInPix);
-			if (tmpAbs < minAbstand) {
-				minAbstand = tmpAbs; 
-				newC = B[leftRightPoints[1]];
-			}		
-		
-			if(1==2) {
-			int minR = ((colorInPix >> Model.SHIFT_RED) & 0xff) - minAbstand;
-			int maxR = ((colorInPix >> Model.SHIFT_RED) & 0xff) + minAbstand;			
-
-			// Suchraum weiter einschränken;
-			// ein nach links und rechts in jedem vektor, ++ nach jedem
-			// iterationsschritt
-			int spannweite = 1;
-			
-			boolean leftDone, rightDone;
-			leftDone = rightDone = false;
-			// RED
-			while (!leftDone && !rightDone) {
-				if (!rightDone && startPointRed + spannweite < R.length && ((R[startPointRed + spannweite] >> Model.SHIFT_RED) & 0xff) < maxR) {
-					tmpAbs = calcAbstand(R[startPointRed + spannweite], colorInPix);
-					if (tmpAbs < minAbstand) {
-						minAbstand = tmpAbs;
-						maxR = ((colorInPix >> Model.SHIFT_RED) & 0xff) + minAbstand;
-						newC = R[startPointRed + spannweite];
-					}
-				}else{
-					rightDone = true;
-				}
-				
-				if (!leftDone && startPointRed - spannweite > -1 && ((R[startPointRed - spannweite] >> Model.SHIFT_RED) & 0xff) > minR) {
-					tmpAbs = calcAbstand(R[startPointRed - spannweite], colorInPix);
-					if (tmpAbs < minAbstand) {
-						minAbstand = tmpAbs;
-						minR = ((colorInPix >> Model.SHIFT_RED) & 0xff) - minAbstand;
-						newC = R[startPointRed - spannweite];
-					}
-				}else{
-					leftDone = true;
-				}
-				++spannweite;
-			}
-
-			
-			int minG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) - minAbstand;
-			int maxG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) + minAbstand;
-			leftDone = rightDone = false;
-			spannweite  = 1;
-
-			// GREEN
-			while (!leftDone && !rightDone) {
-				if (!rightDone && startPointGreen + spannweite < G.length && ((G[startPointGreen + spannweite] >> Model.SHIFT_GREEN) & 0xff) < maxG) {
-					tmpAbs = calcAbstand(G[startPointGreen + spannweite], colorInPix);
-					if (tmpAbs < minAbstand) {
-						minAbstand = tmpAbs;
-						minG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) - minAbstand;
-						newC = G[startPointGreen + spannweite];
-					}
-				}else{
-					rightDone = true;
-				}
-				
-				if (!leftDone && startPointGreen - spannweite > -1 && ((G[startPointGreen - spannweite] >> Model.SHIFT_GREEN) & 0xff) > minG) {
-					tmpAbs = calcAbstand(G[startPointGreen - spannweite], colorInPix);
-					if (tmpAbs < minAbstand) {
-						minAbstand = tmpAbs;
-						maxG = ((colorInPix >> Model.SHIFT_GREEN) & 0xff) + minAbstand;
-						newC = G[startPointGreen - spannweite];
-					}
-				}else{
-					leftDone = true;
-				}
-				++spannweite;
-			}
-			
-			
-			int minB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) - minAbstand;
-			int maxB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) + minAbstand;
-			leftDone = rightDone = false;
-			spannweite = 1;
-
-			// BLUE
-			while (!leftDone && !rightDone) {
-				if ( !rightDone && startPointBlue + spannweite < B.length && ((G[startPointBlue + spannweite] >> Model.SHIFT_BLUE) & 0xff) < maxB) {
-					tmpAbs = calcAbstand(B[startPointBlue + spannweite], colorInPix);
-					if (tmpAbs < minAbstand) {
-						minAbstand = tmpAbs;
-						minB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) - minAbstand;
-						newC = B[startPointBlue + spannweite];
-					}
-				}else{
-					rightDone = true;
-				}
-				
-				if (!leftDone && startPointBlue - spannweite > -1 && ((B[startPointBlue - spannweite] >> Model.SHIFT_BLUE) & 0xff) > minB) {
-					tmpAbs = calcAbstand(B[startPointBlue - spannweite], colorInPix);
-					if (tmpAbs < minAbstand) {
-						minAbstand = tmpAbs;
-						maxB = ((colorInPix >> Model.SHIFT_BLUE) & 0xff) + minAbstand;
-						newC = B[startPointBlue - spannweite];
-					}
-				}else{
-					leftDone = true;
-				}
-				++spannweite;
-			}
-			
-			}
-		return newC;
+		int checks = 1;
+		int offs = 0;
+		while (checks > 0) {			
+			checks = appo.testDistance(R, appo.getRedStartIndex() - offs, Model.SHIFT_RED) +
+			appo.testDistance(R, appo.getRedStartIndex() + offs+1, Model.SHIFT_RED) +
+			appo.testDistance(G, appo.getGreenStartIndex() - offs, Model.SHIFT_GREEN) +
+			appo.testDistance(G, appo.getGreenStartIndex() + offs +1, Model.SHIFT_GREEN) +
+			appo.testDistance(B, appo.getBlueStartIndex() - offs, Model.SHIFT_BLUE) +
+			appo.testDistance(B, appo.getBlueStartIndex() + offs+1, Model.SHIFT_BLUE);
+			offs++;			
+		}
+		return appo.getNewColor();
 	}
 
-	private int calcAbstand(int lrPoint, int col) {
-		int a = ((lrPoint >> Model.SHIFT_RED) & 0xff) - ((col >> Model.SHIFT_RED) & 0xff);
-		int b = ((lrPoint >> Model.SHIFT_GREEN) & 0xff) - ((col >> Model.SHIFT_GREEN) & 0xff);
-		int c = ((lrPoint >> Model.SHIFT_BLUE) & 0xff) - ((col >> Model.SHIFT_BLUE) & 0xff);
-		return (int) Math.sqrt(a * a + b * b + c * c);
-	}
-
-	private int[] binSearch(int[] arr, int val, int shift) {
+	private int binSearch(int[] arr, int val, int shift) {
 		int iL = 0;
 		int iR = arr.length - 1;
 		int MIDDLE = -1;
@@ -271,21 +216,21 @@ public class Approximator {
 				break;
 
 			} else if (RES < 0)
-				iL = MIDDLE + 1; 
+				iL = MIDDLE + 1;
 			else
 				iR = MIDDLE - 1;
 		}
 
 		if (MIDDLE < (arr.length - 1) / 2) {
 			if (MIDDLE == 0)
-				return new int[] { MIDDLE, MIDDLE };
+				return MIDDLE;
 			else
-				return new int[] { (MIDDLE - 1), MIDDLE };
+				return MIDDLE - 1;
 		} else {
 			if (MIDDLE == arr.length - 1)
-				return new int[] { MIDDLE, MIDDLE };
+				return MIDDLE - 1;
 			else
-				return new int[] { MIDDLE, MIDDLE + 1 };
+				return MIDDLE;
 		}
 
 		// closest?
@@ -296,17 +241,18 @@ public class Approximator {
 		// 2. wenn x < v[i] ist, dann vergleiche x mit v[i] und v[i-1]
 		// 3. wenn x > v[i] ist, dann vergleiche x mit v[i] und v[i+1]
 		// System.out.println(MIDDLE);
-		// if(MIDDLE == 0 || MIDDLE == arr.length -1)
+		// if (MIDDLE == 0 || MIDDLE == arr.length - 1)
 		// return MIDDLE;
 		//
-		// if(val < arr[MIDDLE]) {
-		// if((arr[MIDDLE] - val) > ( val - arr[MIDDLE -1]))
+		// if (val < arr[MIDDLE]) {
+		// if ((arr[MIDDLE] - val) > (val - arr[MIDDLE - 1]))
 		// return MIDDLE - 1;
-		// }else if(val > arr[MIDDLE]) {
-		// if((val - arr[MIDDLE]) > ( arr[MIDDLE +1] - val))
+		// } else if (val > arr[MIDDLE]) {
+		// if ((val - arr[MIDDLE]) > (arr[MIDDLE + 1] - val))
 		// return MIDDLE + 1;
 		// }
-
+		//
+		// return MIDDLE;
 	}
 
 	private void createColorMap() {
@@ -408,7 +354,6 @@ public class Approximator {
 			quickSort(arr, i, high);
 	}
 
-	
 	private void quickSortColorArray(int[] arr, int low, int high, int shift) {
 		if (arr == null || arr.length == 0)
 			return;

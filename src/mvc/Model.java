@@ -49,8 +49,6 @@ public class Model {
 	private Approximator approximator = new Approximator();
 
 	public Model() {
-		int[] test = { 3, 6, 7, 8, 12, 24 };
-		// System.out.println(binSearch(test, 25));
 		m_VecAllMyImages = new Vector<MyImage>(5, 0);
 		m_currentGradient = LEFT_TO_RIGHT_GRADIENT;
 		m_Color1 = 0x00FF33;
@@ -61,12 +59,14 @@ public class Model {
 		m_VecAllMyImages.addElement(img);
 	}
 
-	public void reduceColors(int percent) {
-		
-		approximator.reduceColors(percent, m_CenterMyImg);
-		
+	public int getColorCount() {
+		approximator.prepareReduction(m_CenterMyImg);
+		return approximator.getColorCount();
 	}
-
+	public void reduceColors(int grenze) {		
+		approximator.reduceColors(grenze);		
+	}
+	
 	public void manageIconAction(int action, MouseEvent e) {
 		if (Mode.currentMode == Mode.SELECT && m_EndPoint.x != -1) {
 			if (!isMergeReady()) {
