@@ -45,7 +45,6 @@ public class UtilityBar extends JComponent {
 	private JButton m_color1Button;
 	private JButton m_color2Button;
 	private Icon m_zoomOnPoint;
-	private Icon m_reduceColors;
 
 	public UtilityBar(View view, Model m) {
 		m_Model = m;
@@ -102,8 +101,7 @@ public class UtilityBar extends JComponent {
 			add(m_rotateRight);
 			add(m_shearX);
 			add(m_shearY);
-			add(m_reduceColors);
-
+			
 			add(colorSelection);
 			for (int i = 0; i < m_allIcons.length; i++) {
 				if (Mode.currentMode == i) {
@@ -142,9 +140,6 @@ public class UtilityBar extends JComponent {
 		return m_shearY;
 	}
 
-	public Icon getReduceColors() {
-		return m_reduceColors;
-	}
 
 	public JButton getColor1Button() {
 		return m_color1Button;
@@ -188,8 +183,6 @@ public class UtilityBar extends JComponent {
 					ImageIO.read(new File("icons/rotatePoint_active.png")), Mode.ROTATE_POINT);
 			m_zoomOnPoint = new Icon(ImageIO.read(new File("icons/zoomButton.png")),
 					ImageIO.read(new File("icons/zoomButton_active.png")), Mode.ZOOM);
-			m_reduceColors = new Icon(ImageIO.read(new File("icons/zoomButton.png")),
-					ImageIO.read(new File("icons/zoomButton_active.png")));
 			return true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -3,6 +3,7 @@ package mvc;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.event.KeyAdapter;
@@ -14,8 +15,10 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import mvc.Model.Matrix;
@@ -42,8 +45,8 @@ public class Controller {
 		setStartingImage();
 		m_View.getImageBarPanel().revalidate();
 		
-		// proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
-		loadAllImagesFromDirectory();
+		 proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
+		//loadAllImagesFromDirectory();
 		applyKeyListeners();
 		applyMenuListeners();
 		applyPopupListeners();
@@ -217,6 +220,62 @@ public class Controller {
 		m_View.getMyMenuBar().getMI3Dback().addActionListener(e->{
 			m_Model.set3D(false);
 		});
+		
+		m_View.getMyMenuBar().getMIapprox().addActionListener(e->{
+			 new JDialog(m_View, "Reduce Color", true) {
+					{
+						setLocationRelativeTo(null);
+						setLayout(new BorderLayout());
+						JPanel fl = new JPanel();
+						fl.setLayout(new BorderLayout());
+						
+						int differentColorCount =  m_Model.getColorCount();
+						JLabel colorCount = new JLabel(differentColorCount  + " / " + differentColorCount);	
+						JLabel bruteL = new JLabel("Brute force:");
+						JLabel algoL = new JLabel("'Optimierte' Variante:");
+						JButton toOriginal = new JButton("save into original");
+						toOriginal.addActionListener(e->{
+							m_View.getCenterImageComponent().getMyImage().CurrentToOriginal();
+							dispose();
+						});
+						JSlider slider = new JSlider(1, 100, 100);
+						slider.setPaintTicks(true);
+											
+						
+						slider.addChangeListener(e->{
+							if(!slider.getValueIsAdjusting()) {
+								colorCount.setText(slider.getValue()*differentColorCount/100  + " / " + differentColorCount + " \t \t \t " + slider.getValue() + "%");								
+								long bW = ((long)slider.getValue() * (differentColorCount-slider.getValue()));
+								bruteL.setText("Brute force Wurzelberechnungen: " + bW);
+								long time = System.currentTimeMillis();
+								long wBerechnungen = m_Model.reduceColors(slider.getValue());
+								time = (System.currentTimeMillis() - time);
+								algoL.setText("'Optimierte' Variante: " + wBerechnungen  + "\t \t  Effezienter: " + (int)((((double)bW/wBerechnungen)-1)*100) + "%" + " \t \t " + (double)time / 1000 + " Sekunden");
+								
+							}							
+						});
+						setSize(600, 200);
+						slider.setMinimumSize(new Dimension(400,200));
+						add(BorderLayout.CENTER, slider);
+						
+						fl.add(BorderLayout.NORTH, colorCount);
+						fl.add(BorderLayout.CENTER, bruteL);
+						fl.add(BorderLayout.SOUTH, algoL);
+						add(BorderLayout.NORTH, fl);
+						add(BorderLayout.SOUTH,  toOriginal);				
+						setVisible(true);
+						
+						addKeyListener(new KeyAdapter() {
+							public void keyPressed(KeyEvent e) {
+								if(e.getKeyCode() == KeyEvent.VK_RIGHT)
+									slider.setValue(slider.getValue() +1);
+								if(e.getKeyCode() == KeyEvent.VK_LEFT)
+									slider.setValue(slider.getValue() -1);
+							}
+						});
+					}
+				};			
+		});
 	}
 
 	public void applyPopupListeners() {
@@ -375,37 +434,6 @@ public class Controller {
 //		m_View.getUtilityBar().getMoveBottom().addMouseListener(new ControlMouseAdapter(Model.MOVE_BOTTOM));		
 //		m_View.getUtilityBar().getMoveLeft().addMouseListener(new ControlMouseAdapter(Model.MOVE_LEFT));
 	
-		m_View.getUtilityBar().getReduceColors().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				JDialog dialog = new JDialog(m_View, "Reduce Color", true) {
-					{
-						setLocationRelativeTo(null);
-						setLayout(new BorderLayout());
-											
-						int differentColorCount =  m_Model.getColorCount();
-						JLabel colorCount = new JLabel(differentColorCount  + " / " + differentColorCount);	
-						
-						JSlider slider = new JSlider(20, differentColorCount, differentColorCount);
-											
-						
-						slider.addChangeListener(e->{
-							//System.out.println(slider.getValue());
-							if(!slider.getValueIsAdjusting()) {
-								colorCount.setText(slider.getValue()  + " / " + differentColorCount);
-								m_Model.reduceColors(slider.getValue());								
-							}
-							
-						});
-						setSize(400, 200);
-						slider.setMinimumSize(new Dimension(400,200));
-						add(BorderLayout.CENTER, slider);
-						add(BorderLayout.SOUTH, colorCount);
-						setVisible(true);
-					}
-				};
-			}
-		});
 		
 	}
 	class Fader implements Runnable {

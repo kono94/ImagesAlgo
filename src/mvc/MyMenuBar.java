@@ -30,6 +30,8 @@ public class MyMenuBar extends JMenuBar {
 	private JMenuItem m_MIpicFromHisto;
 	private JMenuItem m_MI3D;
 	private JMenuItem m_MI3Dback;
+	private JMenu m_MapproxMenu;
+	private JMenuItem m_MIapprox;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("Comic Sans MS", Font.PLAIN, 18);
@@ -79,11 +81,16 @@ public class MyMenuBar extends JMenuBar {
 		m_MGradientMenu.add(m_MIleftToRight);		
 		m_MsettingsMenu.add(m_MGradientMenu);
 		
+		m_MapproxMenu = new JMenu("Approximation");
+		m_MIapprox = new JMenuItem("Color substitution");
+		m_MapproxMenu.add(m_MIapprox);
+		
 		this.add(m_MfileMenu);
 		this.add(m_MfadingMenu);
 		this.add(m_MhistoMenu);
 		this.add(m_MselMenu);
 		this.add(m_MsettingsMenu);
+		this.add(m_MapproxMenu);
 	}
 
 	public JMenu getMfileMenu() {
@@ -141,5 +148,8 @@ public class MyMenuBar extends JMenuBar {
 	}
 	public JMenuItem getMI3Dback() {
 		return m_MI3Dback;
+	}
+	public JMenuItem getMIapprox() {
+		return m_MIapprox;
 	}
 }

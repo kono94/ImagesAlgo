@@ -63,8 +63,8 @@ public class Model {
 		approximator.prepareReduction(m_CenterMyImg);
 		return approximator.getColorCount();
 	}
-	public void reduceColors(int grenze) {		
-		approximator.reduceColors(grenze);		
+	public int reduceColors(int percent) {		
+		return approximator.reduceColors(percent);	
 	}
 	
 	public void manageIconAction(int action, MouseEvent e) {
