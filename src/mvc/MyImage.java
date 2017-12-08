@@ -24,8 +24,8 @@ public class MyImage extends JComponent {
 	public static final int COMP_WIDTH = 160;
 	public static final int COMP_HEIGHT = 90;
 	
-	public static final int IMG_WIDTH =  20;
-	public static final int IMG_HEIGHT = 20;
+	public static final int IMG_WIDTH =  500;
+	public static final int IMG_HEIGHT = 400;
 	
 	private Image m_Img;
 	private int[] m_CurrentPix = new int[IMG_WIDTH * IMG_HEIGHT];

@@ -386,12 +386,12 @@ public class Controller {
 						int differentColorCount =  m_Model.getColorCount();
 						JLabel colorCount = new JLabel(differentColorCount  + " / " + differentColorCount);	
 						
-						JSlider slider = new JSlider(2, differentColorCount, differentColorCount);
+						JSlider slider = new JSlider(20, differentColorCount, differentColorCount);
 											
 						
 						slider.addChangeListener(e->{
 							//System.out.println(slider.getValue());
-							if(slider.getValueIsAdjusting()) {
+							if(!slider.getValueIsAdjusting()) {
 								colorCount.setText(slider.getValue()  + " / " + differentColorCount);
 								m_Model.reduceColors(slider.getValue());								
 							}

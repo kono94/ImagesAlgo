@@ -14,7 +14,7 @@ public class Approximator {
 	private int m_gesamt;
 	private volatile boolean m_histoDone = false;
 	private MyImage m_myImg;
-
+	private int wurzel = 0;
 	public Approximator() {
 
 	}
@@ -67,10 +67,6 @@ public class Approximator {
 			// sort arrays by color quantity, mirror number-array changes to
 			// color array
 			quickSort(m_numbers, 0, m_numbers.length - 1);
-
-			// recycles color map, to new map: color -> index in color-array for
-			// faster searching (maybe just use binary search here?!)
-			colorMapToPositionMap();
 			m_histoDone = true;
 		}		
 	}
@@ -82,7 +78,7 @@ public class Approximator {
 
 		fillColorArrays(grenze);
 		sortColorArrays();
-	
+		wurzel = 0;
 		HashMap<Integer, Integer> replaceMap = new HashMap<Integer, Integer>();
 		for (int i = 0; i < grenze; i++) {
 			replaceMap.put(m_colors[i], m_colors[i]);
@@ -105,9 +101,32 @@ public class Approximator {
 		}
 
 		m_myImg.newPixels();
+		
+		System.out.println(wurzel);
 		return;
+		
 	}
+	private int getClosestColor(int oldC) {
+		ApproxElement appo = new ApproxElement(oldC);
 
+		// Setzte Startpunkte
+		appo.setStartIndexRed(binSearch(R, oldC, Model.SHIFT_RED));
+		appo.setStartIndexGreen(binSearch(G, oldC, Model.SHIFT_GREEN));
+		appo.setStartIndexBlue(binSearch(B, oldC, Model.SHIFT_BLUE));
+		
+		int checks = 1;
+		int offs = 0;
+		while (checks > 0) {			
+			checks = appo.testDistance(R, appo.getRedStartIndex() - offs, Model.SHIFT_RED) +
+			appo.testDistance(R, appo.getRedStartIndex() + offs, Model.SHIFT_RED) +
+			appo.testDistance(G, appo.getGreenStartIndex() - offs, Model.SHIFT_GREEN) +
+			appo.testDistance(G, appo.getGreenStartIndex() + offs, Model.SHIFT_GREEN) +
+			appo.testDistance(B, appo.getBlueStartIndex() - offs, Model.SHIFT_BLUE) +
+			appo.testDistance(B, appo.getBlueStartIndex() + offs, Model.SHIFT_BLUE);
+			offs++;		
+		}
+		return appo.getNewColor();
+	}
 
 	class ApproxElement {
 		private int m_colorToBeReplaced;
@@ -128,12 +147,14 @@ public class Approximator {
 		}
 
 		// index wird aufgerufen mit
-		// testDistance(R, getStartIndexRed + offset);
-		public int testDistance(int[] arr, int index, int shift) {			
-			if (index > 0 && index < arr.length && isInDistance(arr[index], shift)) {				
+		// testDistance(R, getStartIndexRed +- offset);
+		public int testDistance(int[] arr, int index, int shift) {	
+			System.out.println(m_distance);
+			if (index > 0 && index < arr.length && m_distance > 1 && isInDistance(arr[index], shift)) {				
 				int tmpD = calcAbstand(arr[index], m_colorToBeReplaced);
 				if (tmpD < m_distance) {
 					m_distance = tmpD;
+					//System.out.println("CHNAGED");
 					m_newColor = arr[index];
 				}
 				return 1;
@@ -148,14 +169,18 @@ public class Approximator {
 
 		public void setStartIndexRed(int index) {
 			m_startIndexRed = index;
+//			System.out.println("oldC:" + m_colorToBeReplaced);
+//			System.out.println("red startpoint:" + R[m_startIndexRed]);
 		}
 
 		public void setStartIndexGreen(int index) {
 			m_startIndexGreen = index;
+//			System.out.println("green startpoint:" + G[m_startIndexGreen]);
 		}
 
 		public void setStartIndexBlue(int index) {
 			m_startIndexBlue = index;
+//			System.out.println("blue startpoint:" + B[m_startIndexBlue]);
 		}
 
 		public int getRedStartIndex() {
@@ -174,6 +199,7 @@ public class Approximator {
 			int a = ((lrPoint >> Model.SHIFT_RED) & 0xff) - ((col >> Model.SHIFT_RED) & 0xff);
 			int b = ((lrPoint >> Model.SHIFT_GREEN) & 0xff) - ((col >> Model.SHIFT_GREEN) & 0xff);
 			int c = ((lrPoint >> Model.SHIFT_BLUE) & 0xff) - ((col >> Model.SHIFT_BLUE) & 0xff);
+			wurzel++;
 			return (int) Math.sqrt(a * a + b * b + c * c);
 		}
 
@@ -183,27 +209,7 @@ public class Approximator {
 
 	}
 
-	private int getClosestColor(int oldC) {
-		ApproxElement appo = new ApproxElement(oldC);
-
-		// Setzte Startpunkte
-		appo.setStartIndexRed(binSearch(R, oldC, Model.SHIFT_RED));
-		appo.setStartIndexGreen(binSearch(G, oldC, Model.SHIFT_GREEN));
-		appo.setStartIndexBlue(binSearch(B, oldC, Model.SHIFT_BLUE));
-
-		int checks = 1;
-		int offs = 0;
-		while (checks > 0) {			
-			checks = appo.testDistance(R, appo.getRedStartIndex() - offs, Model.SHIFT_RED) +
-			appo.testDistance(R, appo.getRedStartIndex() + offs+1, Model.SHIFT_RED) +
-			appo.testDistance(G, appo.getGreenStartIndex() - offs, Model.SHIFT_GREEN) +
-			appo.testDistance(G, appo.getGreenStartIndex() + offs +1, Model.SHIFT_GREEN) +
-			appo.testDistance(B, appo.getBlueStartIndex() - offs, Model.SHIFT_BLUE) +
-			appo.testDistance(B, appo.getBlueStartIndex() + offs+1, Model.SHIFT_BLUE);
-			offs++;			
-		}
-		return appo.getNewColor();
-	}
+	
 
 	private int binSearch(int[] arr, int val, int shift) {
 		int iL = 0;
@@ -221,17 +227,17 @@ public class Approximator {
 				iR = MIDDLE - 1;
 		}
 
-		if (MIDDLE < (arr.length - 1) / 2) {
-			if (MIDDLE == 0)
-				return MIDDLE;
-			else
-				return MIDDLE - 1;
-		} else {
-			if (MIDDLE == arr.length - 1)
-				return MIDDLE - 1;
-			else
-				return MIDDLE;
-		}
+//		if (MIDDLE < (arr.length - 1) / 2) {
+//			if (MIDDLE == 0)
+//				return MIDDLE;
+//			else
+//				return MIDDLE - 1;
+//		} else {
+//			if (MIDDLE == arr.length - 1)
+//				return MIDDLE - 1;
+//			else
+//				return MIDDLE;
+//		}
 
 		// closest?
 		// ist x nicht in der Menge vorhanden, dann
@@ -241,24 +247,24 @@ public class Approximator {
 		// 2. wenn x < v[i] ist, dann vergleiche x mit v[i] und v[i-1]
 		// 3. wenn x > v[i] ist, dann vergleiche x mit v[i] und v[i+1]
 		// System.out.println(MIDDLE);
-		// if (MIDDLE == 0 || MIDDLE == arr.length - 1)
-		// return MIDDLE;
-		//
-		// if (val < arr[MIDDLE]) {
-		// if ((arr[MIDDLE] - val) > (val - arr[MIDDLE - 1]))
-		// return MIDDLE - 1;
-		// } else if (val > arr[MIDDLE]) {
-		// if ((val - arr[MIDDLE]) > (arr[MIDDLE + 1] - val))
-		// return MIDDLE + 1;
-		// }
-		//
-		// return MIDDLE;
+		 if (MIDDLE == 0 || MIDDLE == arr.length - 1)
+		 return MIDDLE;
+		
+		 if (val < arr[MIDDLE]) {
+		 if ((arr[MIDDLE] - val) > (val - arr[MIDDLE - 1]))
+		 return MIDDLE - 1;
+		 } else if (val > arr[MIDDLE]) {
+		 if ((val - arr[MIDDLE]) > (arr[MIDDLE + 1] - val))
+		 return MIDDLE + 1;
+		 }
+		
+		 return MIDDLE;
 	}
 
 	private void createColorMap() {
 		m_colorMap = new HashMap<Integer, Integer>();
 
-		int[] pix = m_myImg.getCurrentPix();
+		int[] pix = m_myImg.getOriginalPix();
 		for (int i = 0; i < pix.length; ++i) {
 			if (!m_colorMap.containsKey(pix[i])) {
 				m_colorMap.put(pix[i], 1);
@@ -277,37 +283,99 @@ public class Approximator {
 		}
 	}
 
-	private void colorMapToPositionMap() {
-		for (int i = 0; i < m_colors.length; i++) {
-			m_colorMap.put(m_colors[i], i);
-		}
-	}
-
 	private void fillColorArrays(int grenze) {
 		R = new int[grenze];
 		G = new int[grenze];
 		B = new int[grenze];
 
-		int counter = 0;
+		int c = 0;
 		for (int i = 0; i < grenze; ++i) {
-			R[counter] = m_colors[counter];
-			G[counter] = m_colors[counter];
-			B[counter] = m_colors[counter];
-			++counter;
+			R[c] = m_colors[c];
+			G[c] = m_colors[c];
+			B[c] = m_colors[c];
+			++c;
 		}
 	}
 
-	private void sortColorArrays() {
-		quickSortColorArray(R, 0, R.length - 1, Model.SHIFT_RED);
-		quickSortColorArray(G, 0, G.length - 1, Model.SHIFT_GREEN);
-		quickSortColorArray(B, 0, B.length - 1, Model.SHIFT_BLUE);
+	private void sortColorArrays() {		
+		quickSortColorArray(R, 0, R.length - 1);
+		switchRedWithGreen(G);
+		quickSortColorArray(G, 0, G.length - 1);
+		switchRedWithGreen(G);
+		switchRedWithBlue(B);
+		quickSortColorArray(B, 0, B.length - 1);
+		switchRedWithBlue(B);	
 	}
 
 	public void clearHisto() {
 		m_histoDone = false;
 	}
 
-	private void quickSort(int[] arr, int low, int high) {
+	public void switchRedWithGreen(int[] arr) {
+		for(int i = 0; i<arr.length; ++i) {
+			arr[i] = (arr[i] & 0xff000000)|
+					((arr[i] & 0x0000ff00) << 8)|
+					((arr[i] & 0x00ff0000) >> 8)|
+					((arr[i] & 0xff));
+		}
+	}
+	public void switchRedWithBlue(int[] arr) {
+		for(int i = 0; i<arr.length; ++i) {
+			arr[i] = (arr[i] & 0xff000000)|
+					((arr[i] & 0x000000ff) << 16)|
+					((arr[i] & 0x00ff0000) >> 16)|
+					((arr[i] & 0x0000ff00));
+		}
+	}
+	
+	private void quickSort(int[] colors, int low, int high) {
+		if (colors == null || colors.length == 0)
+			return;
+
+		if (low >= high)
+			return;
+
+		// pick the pivot
+		int middle = low + (high - low) / 2;
+		int pivot;
+
+		pivot = colors[middle];
+
+		// make left < pivot and right > pivot
+		int i = low, j = high;
+		while (i <= j) {
+
+			while (colors[i] > pivot) {
+				i++;
+			}
+
+			while (colors[j] < pivot) {
+				j--;
+			}
+
+			if (i <= j) {
+				int temp = colors[i];
+				colors[i] = colors[j];
+				colors[j] = temp;
+
+				temp = m_colors[i];
+				m_colors[i] = m_colors[j];
+				m_colors[j] = temp;
+
+				i++;
+				j--;
+			}
+		}
+
+		// recursively sort two sub parts
+		if (low < j)
+			quickSort(colors, low, j);
+
+		if (high > i)
+			quickSort(colors, i, high);
+	}
+
+	private void quickSortColorArray(int[] arr, int low, int high) {
 		if (arr == null || arr.length == 0)
 			return;
 
@@ -337,10 +405,6 @@ public class Approximator {
 				arr[i] = arr[j];
 				arr[j] = temp;
 
-				temp = m_colors[i];
-				m_colors[i] = m_colors[j];
-				m_colors[j] = temp;
-
 				i++;
 				j--;
 			}
@@ -348,48 +412,9 @@ public class Approximator {
 
 		// recursively sort two sub parts
 		if (low < j)
-			quickSort(arr, low, j);
+			quickSortColorArray(arr, low, j);
 
 		if (high > i)
-			quickSort(arr, i, high);
-	}
-
-	private void quickSortColorArray(int[] arr, int low, int high, int shift) {
-		if (arr == null || arr.length == 0)
-			return;
-
-		if (low >= high)
-			return;
-
-		// pick the pivot
-		int middle = low + (high - low) / 2;
-		int pivot;
-		pivot = (arr[middle] >> shift) & 0xff;
-
-		// make left < pivot and right > pivot
-		int i = low, j = high;
-		while (i <= j) {
-			while (((arr[i] >> shift) & 0xff) > pivot) {
-				i++;
-			}
-
-			while (((arr[j] >> shift) & 0xff) < pivot) {
-				j--;
-			}
-			if (i <= j) {
-				int temp = arr[i];
-				arr[i] = arr[j];
-				arr[j] = temp;
-				i++;
-				j--;
-			}
-		}
-
-		// recursively sort two sub parts
-		if (low < j)
-			quickSortColorArray(arr, low, j, shift);
-
-		if (high > i)
-			quickSortColorArray(arr, i, high, shift);
+			quickSortColorArray(arr , i, high);
 	}
 }
