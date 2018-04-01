@@ -1,19 +1,11 @@
 package mvc;
 
-import java.awt.Image;
-import java.awt.MediaTracker;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Vector;
-
-import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import mvc.View.CenterImageComponent;
 
 
 @SuppressWarnings("serial")

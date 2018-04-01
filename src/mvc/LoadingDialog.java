@@ -1,18 +1,8 @@
 package mvc;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Point;
-
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import org.omg.PortableServer.ServantRetentionPolicyOperations;
+import java.awt.*;
 
 public class LoadingDialog extends JDialog {
 	JProgressBar m_progressBar;
@@ -21,7 +11,7 @@ public class LoadingDialog extends JDialog {
 		super(owner, title, false);
 		setLayout(new GridLayout(1,2));
 		JLabel textLabel = new JLabel(text, SwingConstants.CENTER);
-		textLabel.setFont(new Font("Arial" , 0 , 20));
+		textLabel.setFont(new Font("Arial", Font.PLAIN, 20));
 		textLabel.setBorder(new EmptyBorder(30, 0, 30, 0));
 		add(textLabel);
 		m_progressBar = new JProgressBar(0,max);

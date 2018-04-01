@@ -1,27 +1,12 @@
 package mvc;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 
 public class InfoDialog extends JDialog{
 		private JLabel m_infoLabel;
@@ -50,18 +35,16 @@ public class InfoDialog extends JDialog{
 					}
 				});
 			}
-			
-			
-			Font f = new Font("Arial", 0,18);
+
+
+			Font f = new Font("Arial", Font.PLAIN, 18);
 			m_infoLabel = new JLabel(text, SwingConstants.CENTER);
 			m_infoLabel.setFont(f);
 			m_infoLabel.setBorder(new EmptyBorder(25, 25, 50, 25));
 			m_okButton = new JButton("	ok	");
 			m_okButton.setFont(f);
 			m_okButton.setPreferredSize(new Dimension(80,30));
-			m_okButton.addActionListener(e->{
-				dispose();
-			});
+			m_okButton.addActionListener(e -> dispose());
 			
 			add(BorderLayout.CENTER, m_infoLabel);
 			JPanel buttonPanel = new JPanel();

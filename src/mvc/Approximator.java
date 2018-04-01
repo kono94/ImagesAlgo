@@ -4,27 +4,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
- * Info: Bildgröße können Sie in der MyImage-Klasse ändern durch die Konstanten:
+ * Info: Bildgrï¿½ï¿½e kï¿½nnen Sie in der MyImage-Klasse ï¿½ndern durch die Konstanten:
  * 		 IMG_WIDTH
  * 		 IMG_HEIGHT
  * 
  * Vorgehen:
  * Map erstellen: diff color -> quantity
- * Diese Map in zwei array übertragen: diff colors in m_colors speichern
+ * Diese Map in zwei array ï¿½bertragen: diff colors in m_colors speichern
  * 									   quantity in m_quantities speichern
- * Jetzt m_quantities mit quicksort sortieren und jeden swap parallel in m_colors ausführen
+ * Jetzt m_quantities mit quicksort sortieren und jeden swap parallel in m_colors ausfï¿½hren
  * Grenze angeben, wieviele Farben erhalten bleiben sollen und diese in drei array (R, G, B) speichern
- * R nach Rot sortieren (gleiche Rotanteile dann nach Grün und dann noch nach Blau)
- * G nach Grün sortieren -II-
+ * R nach Rot sortieren (gleiche Rotanteile dann nach Grï¿½n und dann noch nach Blau)
+ * G nach Grï¿½n sortieren -II-
  * B nach Blau sortieren -II-
  * 
  * neue Map erstellen, die alle unterschiedlichen Farben auf die neuen Farben mappen soll
  * links von der Grenze bleiben alle gleich
- * für jede Farbe rechts der Grenze, die näheste Farbe erreichnen, indem:
- * binäre suche aller Farbanteile der alten Farbe in den jeweiligen R-,G-,B- arrays ->startIndexR,G,B
+ * fï¿½r jede Farbe rechts der Grenze, die nï¿½heste Farbe erreichnen, indem:
+ * binï¿½re suche aller Farbanteile der alten Farbe in den jeweiligen R-,G-,B- arrays ->startIndexR,G,B
  * Abstand berechnen
- * in jedem Array nach links und rechts laufen, bis der Abstand zum Farbanteil größer wird,
- * als der jetzige Gesamtabstand (Trick: erst wurzelberechnen, wenn das unter der Wurzel (a²+b²+c²) kleiner ist, als vom
+ * in jedem Array nach links und rechts laufen, bis der Abstand zum Farbanteil grï¿½ï¿½er wird,
+ * als der jetzige Gesamtabstand (Trick: erst wurzelberechnen, wenn das unter der Wurzel (aï¿½+bï¿½+cï¿½) kleiner ist, als vom
  * vorrigen Gesamtabstand)
  * spart sehr viele Wurzelberechnungen (z.B. Brute Force: 2,3 Milliarden, Jetzt: 700k)
  * 
@@ -32,10 +32,10 @@ import java.util.Map;
  * Fertig!
  * 
  * Annahme/Anmerkung:  
- * 			  (ganz viele 50 Werte für Rotanteil)
+ * 			  (ganz viele 50 Werte fï¿½r Rotanteil)
  * 			  Eindeutige Sortierung bringt keine Optimieren, da der Abstand immer mindestens
- * 			  1 beträgt, d.h. man würde zwar einen guten Einstiegspunkt finden in allen
- * 			  50ern, aber müsste ja trotzdem durch alle durchgehen, da man sich mindestens
+ * 			  1 betrï¿½gt, d.h. man wï¿½rde zwar einen guten Einstiegspunkt finden in allen
+ * 			  50ern, aber mï¿½sste ja trotzdem durch alle durchgehen, da man sich mindestens
  * 		      die Werte von 49 bis 51 anschauen muss. 	
  */
 public class Approximator {
@@ -80,7 +80,7 @@ public class Approximator {
 		 * color in original picture -> color in new picture
 		 * (can be the same ofc.)
 		 */
-		HashMap<Integer, Integer> replaceMap = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> replaceMap = new HashMap<>();
 		/*
 		 * m_colors is sorted in descending order. 
 		 * Most common color at [0]...
@@ -146,7 +146,7 @@ public class Approximator {
 		private int m_distance;
 		/*
 		 * trick to only operate a square calculation
-		 * if the distance is smaller before the square root (a²+b²+c²)
+		 * if the distance is smaller before the square root (aï¿½+bï¿½+cï¿½)
 		 */
 		private int m_distanceBeforeSqrt;
 		public static final int RED = 0, GREEN = 1, BLUE = 2;
@@ -184,7 +184,7 @@ public class Approximator {
 			int c = ((checkC >> Model.SHIFT_BLUE) & 0xff) - ((col >> Model.SHIFT_BLUE) & 0xff);
 			int beforeSqrt = a * a + b * b + c * c;
 			if(beforeSqrt < m_distanceBeforeSqrt) {
-				m_distance = (int) Math.ceil(Math.sqrt(beforeSqrt));;
+				m_distance = (int) Math.ceil(Math.sqrt(beforeSqrt));
 				m_distanceBeforeSqrt = beforeSqrt;
 				m_newColor = checkC;
 				roots++;			
@@ -220,11 +220,11 @@ public class Approximator {
 	private void createColorMap() {
 		m_colorMap = new HashMap<Integer, Integer>();
 		int[] pix = m_myImg.getOriginalPix();
-		for (int i = 0; i < pix.length; ++i) {
-			if (!m_colorMap.containsKey(pix[i])) {
-				m_colorMap.put(pix[i], 1);
+		for (int aPix : pix) {
+			if (!m_colorMap.containsKey(aPix)) {
+				m_colorMap.put(aPix, 1);
 			} else {
-				m_colorMap.put(pix[i], (int) m_colorMap.get(pix[i]) + 1);
+				m_colorMap.put(aPix, (int) m_colorMap.get(aPix) + 1);
 			}
 		}
 	}
@@ -233,7 +233,7 @@ public class Approximator {
 		int counter = 0;
 		for (Integer color : m_colorMap.keySet()) {
 			m_colors[counter] = color;
-			m_quantities[counter] = (Integer) m_colorMap.get(color);
+			m_quantities[counter] = m_colorMap.get(color);
 			counter++;
 		}
 	}

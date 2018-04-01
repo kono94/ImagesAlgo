@@ -1,37 +1,32 @@
 package mvc;
 
-import java.awt.Font;
-
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.UIManager;
+import javax.swing.*;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class MyMenuBar extends JMenuBar {
-	private JMenu m_MfileMenu;
-	private JMenuItem m_MIopen;
-	private JMenuItem m_MIloadAllImagesItem;
-	private JMenu m_MfadingMenu;
-	private JMenuItem m_MIslow;
-	private JMenuItem m_MImedium;
-	private JMenuItem m_MIveryFast;
-	private JMenuItem m_MIfadeSwitcher;
-	private JMenu m_MhistoMenu;
-	private JMenuItem m_MIcreateHisto;
-	private JMenu m_MselMenu;
-	private JMenuItem m_MIputIn;
-	private JMenuItem m_MIrandomColor;
-	private JMenu m_MsettingsMenu;
-	private JMenu m_MGradientMenu;
-	private JMenuItem m_MIleftToRight;
-	private JMenuItem m_MIMidToOut;
-	private JMenuItem m_MIpicFromHisto;
-	private JMenuItem m_MI3D;
-	private JMenuItem m_MI3Dback;
-	private JMenu m_MapproxMenu;
-	private JMenuItem m_MIapprox;
+	private final JMenu m_MfileMenu;
+	private final JMenuItem m_MIopen;
+	private final JMenuItem m_MIloadAllImagesItem;
+	private final JMenu m_MfadingMenu;
+	private final JMenuItem m_MIslow;
+	private final JMenuItem m_MImedium;
+	private final JMenuItem m_MIveryFast;
+	private final JMenuItem m_MIfadeSwitcher;
+	private final JMenu m_MhistoMenu;
+	private final JMenuItem m_MIcreateHisto;
+	private final JMenu m_MselMenu;
+	private final JMenuItem m_MIputIn;
+	private final JMenuItem m_MIrandomColor;
+	private final JMenu m_MsettingsMenu;
+	private final JMenu m_MGradientMenu;
+	private final JMenuItem m_MIleftToRight;
+	private final JMenuItem m_MIMidToOut;
+	private final JMenuItem m_MIpicFromHisto;
+	private final JMenuItem m_MI3D;
+	private final JMenuItem m_MI3Dback;
+	private final JMenu m_MapproxMenu;
+	private final JMenuItem m_MIapprox;
 
 	public MyMenuBar(JFrame owner) {
 		Font f = new Font("Comic Sans MS", Font.PLAIN, 18);

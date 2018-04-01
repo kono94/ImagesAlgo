@@ -1,22 +1,14 @@
 package mvc;
 
-import java.awt.Color;
+import mvc.Model.Matrix;
+import mvc.View.CenterImageComponent;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Point;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-
-import mvc.Model.Matrix;
-import mvc.View.CenterImageComponent;
 
 @SuppressWarnings("serial")
 public class MyImage extends JComponent {	
@@ -81,7 +73,7 @@ public class MyImage extends JComponent {
 				}
 
 				else if (SwingUtilities.isRightMouseButton(e)) {
-					m_selected = m_selected == true ? false : true;
+					m_selected = m_selected != true;
 					// random();
 					 repaint();
 				}
@@ -103,9 +95,7 @@ public class MyImage extends JComponent {
 
 	// values from b[] are written into a[]
 	private void hardCopyArray(int[] a, int[] b){
-		for(int i=0; i < a.length; i++){
-			a[i] = b[i];
-		}
+		System.arraycopy(b, 0, a, 0, a.length);
 	}
 	
 	
@@ -147,7 +137,7 @@ public class MyImage extends JComponent {
 
 		// draws the image; getWidth() - borderWidth*2 { one borderWidth on
 		// each side}
-		g.drawImage(m_Img, 0 + borderWidth, 0 + borderWidth, getWidth() - borderWidth * 2,
+		g.drawImage(m_Img, borderWidth, borderWidth, getWidth() - borderWidth * 2,
 				getHeight() - borderWidth * 2, this);
 	}
 	

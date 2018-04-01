@@ -1,27 +1,12 @@
 package mvc;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.event.ComponentListener;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.MouseInputAdapter;
 
 public class UtilityBar extends JComponent {
 	private Icon m_pfeil;
@@ -111,7 +96,7 @@ public class UtilityBar extends JComponent {
 				}
 			}
 		} else {
-			new InfoDialog((JFrame) view, "Error", true,
+			new InfoDialog(view, "Error", true,
 					"Could not load Icons, which are VERY important to the program", false);
 		}
 	}

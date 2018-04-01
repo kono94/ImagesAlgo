@@ -1,27 +1,10 @@
 package mvc;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.Point;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.NumberFormatter;
 
 @SuppressWarnings("serial")
 public class PopupDialog extends JDialog {
@@ -168,7 +151,7 @@ public class PopupDialog extends JDialog {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			okButton.doClick();
-		};
+		}
 	}
 
 	public int getIntValue1() {

@@ -1,28 +1,12 @@
 package mvc;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.MediaTracker;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.util.Vector;
-
-import javax.imageio.ImageIO;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-
-import mvc.Model.Matrix;
-import mvc.UtilityBar.Icon;
 
 @SuppressWarnings("serial")
 public class Controller {
@@ -54,8 +38,8 @@ public class Controller {
 	}
 
 	public void proceedJFileChooserInput(Image[] imgs) {
-		for (int i = 0; i < imgs.length; i++) {
-			MyImage tmp = new MyImage(imgs[i], m_View.getCenterImageComponent());
+		for (Image img : imgs) {
+			MyImage tmp = new MyImage(img, m_View.getCenterImageComponent());
 			// add it to the bottom imageBar (small images)
 			m_View.getImageBarPanel().add(tmp);
 			// add Component to vector
@@ -66,44 +50,41 @@ public class Controller {
 	}
 	
 	public void loadAllImagesFromDirectory() {
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					// . means current working directory
-					File directory = new File("./pictures");
-					File[] f = directory.listFiles();
-					LoadingDialog loadingDialog = new LoadingDialog(m_View, "Loading Images", "Loading Images...", f.length);
+		new Thread(() -> {
+			try {
+				// . means current working directory
+				File directory = new File("./pictures");
+				File[] f = directory.listFiles();
+				LoadingDialog loadingDialog = new LoadingDialog(m_View, "Loading Images", "Loading Images...", f.length);
 
-					for (File file : f) {
-						// if file ends with .jpg or .gif
-						if (file != null && (file.getName().toLowerCase().endsWith(".jpg")
-								|| file.getName().toLowerCase().endsWith(".gif"))) {
+				for (File file : f) {
+					// if file ends with .jpg or .gif
+					if (file != null && (file.getName().toLowerCase().endsWith(".jpg")
+							|| file.getName().toLowerCase().endsWith(".gif"))) {
 
-							MediaTracker mt = new MediaTracker(m_View);
-							Image tmpImg = ImageIO.read(file);
-							mt.addImage(tmpImg, 0);
-							mt.waitForAll();
+						MediaTracker mt = new MediaTracker(m_View);
+						Image tmpImg = ImageIO.read(file);
+						mt.addImage(tmpImg, 0);
+						mt.waitForAll();
 
-							// add it to the bottom imageBar (small images)
-							MyImage tmp = new MyImage(tmpImg, m_View.getCenterImageComponent());
-							// add it to the bottom imageBar (small images)
-							m_View.getImageBarPanel().add(tmp);
+						// add it to the bottom imageBar (small images)
+						MyImage tmp = new MyImage(tmpImg, m_View.getCenterImageComponent());
+						// add it to the bottom imageBar (small images)
+						m_View.getImageBarPanel().add(tmp);
 
-							// add Component to vector
-							m_Model.addImage(tmp);
-						}
-						loadingDialog.addProgress();
+						// add Component to vector
+						m_Model.addImage(tmp);
 					}
-					setStartingImage();
-					loadingDialog.dispose();
-				} catch (Exception e) {
-					System.out.println("File error");
+					loadingDialog.addProgress();
 				}
-				m_View.getImageBarPanel().revalidate();
-				
+				setStartingImage();
+				loadingDialog.dispose();
+			} catch (Exception e) {
+				System.out.println("File error");
 			}
-		}.start();
+			m_View.getImageBarPanel().revalidate();
+
+		}).start();
 
 	}
 	public void setStartingImage() {		
@@ -138,9 +119,7 @@ public class Controller {
 	}
 	public void applyMenuListeners() {
 		// load in a single image
-		m_View.getMyMenuBar().getMIopen().addActionListener(e -> {
-			proceedJFileChooserInput(new MyFileChooser(m_View).getInput());
-		});
+		m_View.getMyMenuBar().getMIopen().addActionListener(e -> proceedJFileChooserInput(new MyFileChooser(m_View).getInput()));
 
 		// load all images from working directory
 		m_View.getMyMenuBar().getMILoadAllImagesItem().addActionListener(e -> {
@@ -288,7 +267,7 @@ public class Controller {
 		});
 		m_View.getCenterImageComponent().getPopup().getMITranslateRandom().addActionListener(e -> {
 			// [0] = horizontal, [1] = vertical
-			int[] random = new int[2];
+			int[] random;
 			random = m_Model.getRandomValuesForTranslation();
 			if(m_Model.getEndPoint().x == -1) {
 				m_Model.translate(m_View.getCenterImageComponent().getMyImage(), random[0], random[1]);
@@ -459,9 +438,9 @@ public class Controller {
 					&& m_View.getCenterImageComponent().getMyImage().isSelected()) {
 				loopStart = m_Model.getMyImageVector().indexOf(m_View.getCenterImageComponent().getMyImage());
 			} else {
-				for (int i = 0; i < vecSize; ++i) {
-					if (imgVec.get(i).isSelected()) {
-						m_View.getCenterImageComponent().setMyImage(imgVec.get(i));
+				for (MyImage anImgVec : imgVec) {
+					if (anImgVec.isSelected()) {
+						m_View.getCenterImageComponent().setMyImage(anImgVec);
 						break;
 					}
 				}

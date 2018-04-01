@@ -1,29 +1,17 @@
 package mvc;
 
-import java.awt.List;
-import java.awt.Point;
+import mvc.View.CenterImageComponent;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.sql.DataTruncation;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.swing.SwingUtilities;
-
-import mvc.View.CenterImageComponent;
 
 public class Model {
 	// Vector in which every component is saved, to loop through and
@@ -226,7 +214,6 @@ public class Model {
 				}
 			}
 			m_WorkingLayerMyImage.setCurrentPix(m_WorkingLayerMyImage.getOriginalPix());
-			;
 			m_WorkingLayerMyImage.newPixels();
 			cImg.newPixels();
 		} else {
@@ -449,7 +436,7 @@ public class Model {
 
 		for (int x = x1; x < x2 + 1; ++x) {
 			for (int y = y1; y < y2 + 1; ++y) {
-				if (x < x1 || y < y1 || x > x2 || y > y2)
+				if (y < y1 || x > x2 || y > y2)
 					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0xff882288;
 				else
 					m_WorkingLayerMyImage.getCurrentPix()[y * MyImage.IMG_WIDTH + x] = 0x99222299;
@@ -609,11 +596,11 @@ public class Model {
 			TreeMap<Integer, Integer> colorMap = new TreeMap<Integer, Integer>();
 
 			int[] pix = img.getCurrentPix();
-			for (int i = 0; i < pix.length; ++i) {
-				if (!colorMap.containsKey(pix[i])) {
-					colorMap.put(pix[i], 1);
+			for (int aPix : pix) {
+				if (!colorMap.containsKey(aPix)) {
+					colorMap.put(aPix, 1);
 				} else {
-					colorMap.put(pix[i], (int) colorMap.get(pix[i]) + 1);
+					colorMap.put(aPix, (int) colorMap.get(aPix) + 1);
 				}
 			}
 			// Map<Integer,Integer> = new TreeMap(colorMap);
@@ -627,7 +614,7 @@ public class Model {
 //				 out.writeInt(color);
 //				 out.writeInt((Integer)colorMap.get(color));
 
-				writer.println(Integer.toHexString(color) + ": " + (Integer) colorMap.get(color));
+				writer.println(Integer.toHexString(color) + ": " + colorMap.get(color));
 			}
 
 			writer.close();
@@ -653,12 +640,12 @@ public class Model {
 			String[] stringArr = list.toArray(new String[0]);
 			System.out.println(stringArr.length);
 			int pos = 0;
-			for (int i = 0; i < stringArr.length; i++) {
+			for (String aStringArr : stringArr) {
 				int howOften = Integer
-						.parseInt(stringArr[i].substring(stringArr[i].indexOf(" ") + 1, stringArr[i].length()));
+						.parseInt(aStringArr.substring(aStringArr.indexOf(" ") + 1, aStringArr.length()));
 				for (int k = 0; k < howOften; ++k) {
 					m_CenterMyImg.getCurrentPix()[pos] = (int) Long
-							.parseLong(stringArr[i].substring(0, stringArr[i].indexOf(":")), 16);
+							.parseLong(aStringArr.substring(0, aStringArr.indexOf(":")), 16);
 					pos++;
 				}
 
@@ -724,7 +711,7 @@ public class Model {
 	}
 
 	private boolean generateBoolean() {
-		return Math.random() > 0.5 ? false : true;
+		return !(Math.random() > 0.5);
 	}
 
 	public MyImage getWorkingMyImage() {
@@ -738,8 +725,7 @@ public class Model {
 	public int[] getRandomValuesForTranslation() {
 		int h = generateRandomInt(-200, 200);
 		int v = generateRandomInt(-150, 150);
-		int[] tmp = { h, v };
-		return tmp;
+		return new int[]{h, v};
 	}
 
 	public double getRandomValueForRotation() {
@@ -897,7 +883,7 @@ public class Model {
 		public String toString() {
 			StringBuilder s = new StringBuilder();
 			for (int i = 0; i < 3; i++)
-				s.append(m_Data[i] + " ");
+				s.append(m_Data[i]).append(" ");
 			return s.toString();
 		}
 
@@ -1050,7 +1036,7 @@ public class Model {
 			StringBuilder s = new StringBuilder();
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++)
-					s.append(m_Data[i][j] + "\t");
+					s.append(m_Data[i][j]).append("\t");
 				s.append("\n");
 			}
 			return s.toString();
